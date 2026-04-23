@@ -1,0 +1,2640 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="SmartTrip AI — Next-Generation AI-Powered Travel Intelligence Platform"/>
+<meta name="theme-color" content="#070d1c"/>
+<title>SmartTrip AI — Next-Gen Travel Intelligence</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================ TOKENS */
+:root {
+  --bg:#060c1a; --bg2:#0b1628; --bg3:#101f3a; --surf:#162540; --surf2:#1c2f50;
+  --accent:#5effc4; --accent2:#8b5cf6; --accent3:#f97066; --gold:#fbbf24; --pink:#f472b6;
+  --text:#d4e4f7; --text2:#7a90b8; --white:#eef4ff;
+  --border:rgba(94,255,196,.1); --border2:rgba(94,255,196,.22);
+  --glow:rgba(94,255,196,.15); --glow2:rgba(139,92,246,.15);
+  --r:14px; --r2:22px; --r3:30px;
+  --trans:all .28s cubic-bezier(.4,0,.2,1);
+  --font-d:'Cormorant Garamond',Georgia,serif;
+  --font-b:'DM Sans',system-ui,sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --nav-h:66px;
+}
+[data-theme="light"] {
+  --bg:#f5f7ff; --bg2:#edf0fb; --bg3:#e3e9fa; --surf:#fff; --surf2:#f0f3fc;
+  --text:#1a2340; --text2:#516080; --border:rgba(0,0,0,.09); --border2:rgba(0,0,0,.18);
+  --glow:rgba(94,255,196,.1); --glow2:rgba(139,92,246,.1);
+}
+/* ============================================================ BASE */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);overflow-x:hidden;min-height:100vh;transition:background .4s,color .35s}
+::selection{background:var(--accent);color:#000}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--accent2);border-radius:3px}
+/* ============================================================ BACKGROUNDS */
+.bg-mesh{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 55% at 15% 5%,rgba(94,255,196,.06),transparent 55%),
+    radial-gradient(ellipse 55% 75% at 85% 85%,rgba(139,92,246,.09),transparent 55%),
+    radial-gradient(ellipse 40% 40% at 65% 30%,rgba(244,114,182,.04),transparent 55%)}
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.03;
+  background-image:linear-gradient(var(--accent) 1px,transparent 1px),linear-gradient(90deg,var(--accent) 1px,transparent 1px);
+  background-size:52px 52px}
+/* ============================================================ LAYOUT */
+.page{display:none;min-height:100vh;padding-bottom:80px;position:relative;z-index:1}
+.page.active{display:block;animation:pageIn .35s cubic-bezier(.4,0,.2,1)}
+@keyframes pageIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+/* ============================================================ NAVBAR */
+.navbar{background:rgba(6,12,26,.85)!important;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);padding:12px 0;height:var(--nav-h)}
+[data-theme="light"] .navbar{background:rgba(245,247,255,.9)!important}
+.navbar-brand{font-family:var(--font-d);font-size:1.55rem;font-weight:700;letter-spacing:-.01em}
+.brand-text{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-link{color:var(--text2)!important;font-size:.88rem;font-weight:500;transition:var(--trans);padding:.3rem .65rem!important;border-radius:8px}
+.nav-link:hover{color:var(--accent)!important;background:rgba(94,255,196,.06)}
+/* ============================================================ GLASS */
+.glass{background:rgba(22,37,64,.52);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--border);border-radius:var(--r2);transition:var(--trans)}
+[data-theme="light"] .glass{background:rgba(255,255,255,.72);border-color:rgba(0,0,0,.09)}
+.glass:hover{border-color:var(--border2)}
+.glass-sm{border-radius:var(--r)}
+.glass-accent{border-color:var(--accent)!important;box-shadow:0 0 28px var(--glow)}
+/* ============================================================ TYPOGRAPHY */
+.display-serif{font-family:var(--font-d);font-weight:700;letter-spacing:-.02em;line-height:1.05}
+.mono{font-family:var(--font-m)}
+.grad{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.grad-gold{background:linear-gradient(135deg,var(--gold),#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.grad-purple{background:linear-gradient(135deg,var(--accent2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.section-label{font-family:var(--font-m);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.4rem}
+/* ============================================================ BUTTONS */
+.btn-primary-custom{background:linear-gradient(135deg,var(--accent),#00d4a0);color:#041020;font-weight:700;border:none;
+  border-radius:var(--r);padding:.7rem 1.6rem;transition:var(--trans);position:relative;overflow:hidden;font-family:var(--font-b)}
+.btn-primary-custom:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(94,255,196,.28);color:#041020}
+.btn-outline-custom{background:transparent;color:var(--accent);border:1.5px solid var(--accent);
+  border-radius:var(--r);padding:.7rem 1.6rem;font-weight:600;transition:var(--trans);font-family:var(--font-b)}
+.btn-outline-custom:hover{background:rgba(94,255,196,.09);color:var(--accent);transform:translateY(-1px)}
+.btn-glass-custom{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border2);
+  border-radius:var(--r);padding:.6rem 1.4rem;font-weight:500;transition:var(--trans);font-family:var(--font-b)}
+.btn-glass-custom:hover{background:rgba(94,255,196,.08);color:var(--accent);border-color:var(--accent)}
+.btn-danger-custom{background:linear-gradient(135deg,var(--accent3),#dc2626);color:#fff;border:none;
+  border-radius:var(--r);padding:.7rem 1.6rem;font-weight:700;transition:var(--trans);font-family:var(--font-b)}
+.btn-danger-custom:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(249,112,102,.32);color:#fff}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#f59e0b);color:#1a0f00;font-weight:700;border:none;
+  border-radius:var(--r);padding:.7rem 1.6rem;transition:var(--trans);font-family:var(--font-b)}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(251,191,36,.3);color:#1a0f00}
+/* ============================================================ FORMS */
+.form-control,.form-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);
+  border-radius:var(--r);padding:.78rem 1.05rem;font-family:var(--font-b);transition:var(--trans);font-size:.9rem}
+.form-control:focus,.form-select:focus{background:var(--surf);border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(94,255,196,.14);color:var(--text);outline:none}
+.form-control::placeholder{color:var(--text2);opacity:.7}
+.form-label{font-size:.73rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text2);margin-bottom:.35rem}
+[data-theme="light"] .form-control,[data-theme="light"] .form-select{background:#f0f3fc;color:#1a2340;border-color:rgba(0,0,0,.14)}
+[data-theme="light"] .form-control::placeholder{color:#8a9ab8}
+.form-control:disabled{opacity:.55}
+/* ============================================================ CHIPS */
+.chip{display:inline-block;padding:.3rem .9rem;border-radius:100px;font-size:.76rem;font-weight:600;letter-spacing:.03em;
+  border:1px solid var(--border2);background:rgba(94,255,196,.05);color:var(--text2);transition:var(--trans);cursor:pointer}
+.chip:hover,.chip.active{background:rgba(94,255,196,.14);border-color:var(--accent);color:var(--accent)}
+.chip.active-purple{background:rgba(139,92,246,.14);border-color:var(--accent2);color:var(--accent2)}
+.badge-glow{background:rgba(94,255,196,.11);color:var(--accent);border:1px solid var(--accent);
+  border-radius:100px;padding:.22rem .8rem;font-size:.68rem;font-weight:700;letter-spacing:.1em;font-family:var(--font-m)}
+/* ============================================================ MAP */
+.map-wrap{border-radius:var(--r2);overflow:hidden;border:1px solid var(--border2)}
+.leaflet-popup-content-wrapper{background:var(--bg3);color:var(--text);border:1px solid var(--accent);border-radius:12px}
+.leaflet-popup-tip{background:var(--bg3)}
+/* ============================================================ PROGRESS */
+.stat-bar-track{height:7px;background:var(--surf2);border-radius:100px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1.1s cubic-bezier(.4,0,.2,1)}
+.stat-num{font-family:var(--font-m);font-size:1.7rem;font-weight:700}
+/* ============================================================ CHAT */
+.chat-wrap{height:calc(100vh - 200px);min-height:420px;display:flex;flex-direction:column}
+.chat-messages{flex:1;overflow-y:auto;padding:1.1rem;display:flex;flex-direction:column;gap:.65rem}
+.msg{max-width:78%;padding:.82rem 1.1rem;border-radius:18px;font-size:.88rem;line-height:1.55;animation:msgIn .22s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.msg-user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),#00d4a0);color:#041020;border-bottom-right-radius:4px;font-weight:500}
+.msg-bot{align-self:flex-start;background:var(--surf2);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px}
+.chat-input-row{border-top:1px solid var(--border);padding:.9rem 1.1rem;display:flex;gap:.65rem;align-items:center}
+/* ============================================================ MOOD CARDS */
+.mood-card{cursor:pointer;transition:var(--trans);padding:1.35rem .9rem;text-align:center}
+.mood-card:hover,.mood-card.selected{border-color:var(--accent)!important;background:rgba(94,255,196,.07)!important;box-shadow:0 0 22px var(--glow)}
+.mood-card.selected .mood-icon{transform:scale(1.18)}
+.mood-icon{font-size:2.4rem;display:block;transition:var(--trans);margin-bottom:.45rem}
+.mood-label{font-weight:700;font-size:.87rem;color:var(--text)}
+/* ============================================================ TRIP CARDS */
+.trip-card{border-radius:var(--r2);overflow:hidden;transition:var(--trans);cursor:pointer}
+.trip-card:hover{transform:translateY(-4px);box-shadow:0 20px 48px rgba(0,0,0,.4)}
+.trip-img{width:100%;height:195px;object-fit:cover}
+.trip-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,12,26,.95) 0%,rgba(6,12,26,.2) 55%,transparent 100%)}
+/* ============================================================ AVATAR */
+.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;color:#041020;font-weight:800;font-size:.95rem;
+  border:2px solid var(--bg);box-shadow:0 0 14px var(--glow);flex-shrink:0}
+.avatar-xl{width:130px;height:130px;font-size:3.2rem}
+/* ============================================================ LOADING */
+.spin{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse-anim{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ============================================================ TOAST */
+.toast-stack{position:fixed;bottom:22px;right:22px;z-index:99999;display:flex;flex-direction:column;gap:.45rem;max-width:340px}
+.toast-item{padding:.85rem 1.15rem;border-radius:var(--r);backdrop-filter:blur(22px);
+  animation:toastIn .3s cubic-bezier(.4,0,.2,1);display:flex;gap:.7rem;align-items:flex-start;
+  border:1px solid;cursor:pointer;font-size:.855rem;font-weight:500}
+@keyframes toastIn{from{opacity:0;transform:translateX(38px)}to{opacity:1;transform:none}}
+.toast-success{background:rgba(22,40,71,.93);border-color:var(--accent);color:var(--accent)}
+.toast-error{background:rgba(60,18,18,.93);border-color:var(--accent3);color:var(--accent3)}
+.toast-info{background:rgba(22,28,71,.93);border-color:var(--accent2);color:var(--accent2)}
+.toast-warn{background:rgba(58,42,8,.93);border-color:var(--gold);color:var(--gold)}
+/* ============================================================ EXPENSE */
+.expense-item{display:flex;align-items:center;gap:.9rem;padding:.9rem 1.1rem;border-radius:var(--r);
+  border:1px solid var(--border);background:var(--surf);transition:var(--trans)}
+.expense-item:hover{border-color:var(--border2);background:var(--surf2)}
+.cat-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+/* ============================================================ HERO */
+.hero-section{min-height:90vh;display:flex;align-items:center;position:relative;overflow:hidden}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+/* ============================================================ BOOKING */
+.booking-option{display:flex;align-items:center;gap:.9rem;padding:1rem 1.1rem;border:1px solid var(--border2);
+  border-radius:var(--r);cursor:pointer;transition:var(--trans);margin-bottom:.65rem}
+.booking-option:hover,.booking-option.selected{border-color:var(--accent);background:rgba(94,255,196,.06)}
+.booking-option input[type=radio]{accent-color:var(--accent)}
+/* ============================================================ TIMELINE */
+.timeline{position:relative;padding-left:2.8rem}
+.timeline::before{content:'';position:absolute;left:.8rem;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--accent),transparent)}
+.timeline-item{position:relative;margin-bottom:1.75rem}
+.timeline-dot{position:absolute;left:-2rem;top:.3rem;width:14px;height:14px;border-radius:50%;
+  background:var(--accent);border:3px solid var(--bg);box-shadow:0 0 10px var(--glow)}
+.timeline-day{font-family:var(--font-m);font-size:.68rem;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;margin-bottom:.22rem}
+/* ============================================================ BUDDY */
+.buddy-card{position:relative;overflow:hidden;transition:var(--trans)}
+.buddy-card:hover{transform:translateY(-4px)}
+.match-badge{position:absolute;top:.85rem;right:.85rem;background:linear-gradient(135deg,var(--accent),#00d4a0);
+  color:#041020;font-weight:800;font-size:.72rem;padding:.18rem .6rem;border-radius:100px}
+/* ============================================================ STARS */
+.star{cursor:pointer;font-size:2.3rem;transition:var(--trans);color:var(--text2)}
+.star:hover,.star.lit{color:var(--gold);transform:scale(1.1)}
+/* ============================================================ PAY MODAL */
+#payModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);
+  z-index:99990;align-items:center;justify-content:center}
+.pay-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);width:100%;max-width:400px;overflow:hidden}
+.pay-header{background:linear-gradient(135deg,var(--accent2),var(--accent));padding:1.4rem 2rem;text-align:center}
+/* ============================================================ SPLASH */
+#pgSplash{background:var(--bg);min-height:100vh;display:flex!important;align-items:center;justify-content:center;flex-direction:column}
+.splash-logo{width:96px;height:96px;border-radius:26px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:3.2rem;
+  box-shadow:0 0 72px var(--glow),0 0 28px var(--glow2);
+  animation:splashPop .65s cubic-bezier(.175,.885,.32,1.275) both}
+@keyframes splashPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.splash-bar{width:200px;height:3px;background:var(--surf2);border-radius:100px;overflow:hidden;margin-top:1.8rem}
+.splash-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent2));animation:splashLoad 2s ease forwards}
+@keyframes splashLoad{from{width:0}to{width:100%}}
+/* ============================================================ SUMMARY */
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px solid var(--border)}
+.sum-row:last-child{border-bottom:none;padding-top:.85rem;margin-top:.4rem}
+/* ============================================================ PROFILE */
+.prof-banner{height:170px;background:linear-gradient(135deg,var(--accent2),var(--accent));border-radius:var(--r2) var(--r2) 0 0}
+/* ============================================================ NOTIF */
+.notif-item{display:flex;gap:.9rem;padding:1rem 1.1rem;border-radius:var(--r);border:1px solid var(--border);background:var(--surf);transition:var(--trans);cursor:pointer}
+.notif-item:hover{border-color:var(--border2)}
+.notif-item.unread{border-color:var(--accent);background:rgba(94,255,196,.04)}
+.notif-icon{font-size:1.45rem;flex-shrink:0;margin-top:.05rem}
+/* ============================================================ SETTINGS */
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:.95rem 1.1rem;border-radius:var(--r);
+  border:1px solid var(--border);background:var(--surf);transition:var(--trans);margin-bottom:.5rem}
+.setting-row:hover{border-color:var(--border2)}
+.form-check-input:checked{background-color:var(--accent)!important;border-color:var(--accent)!important}
+.form-check-input:focus{box-shadow:0 0 0 3px rgba(94,255,196,.18)!important}
+/* ============================================================ DEST CARD */
+.dest-card{position:relative;border-radius:var(--r2);overflow:hidden;cursor:pointer;transition:var(--trans);aspect-ratio:4/3}
+.dest-card:hover{transform:scale(1.025);box-shadow:0 20px 48px rgba(0,0,0,.48)}
+.dest-card img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.dest-card:hover img{transform:scale(1.07)}
+.dest-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,12,26,.9) 0%,transparent 50%);
+  display:flex;flex-direction:column;justify-content:flex-end;padding:1.1rem}
+/* ============================================================ CURRENCY & AI CHAT */
+.ai-chat-wrap{height:380px;display:flex;flex-direction:column}
+/* ============================================================ WEATHER WIDGET */
+.weather-widget{background:linear-gradient(135deg,rgba(94,255,196,.08),rgba(139,92,246,.08));border:1px solid var(--border2);border-radius:var(--r2);padding:1.25rem}
+/* ============================================================ MISC */
+.cursor{cursor:pointer}
+.text-accent{color:var(--accent)}
+.text-muted-custom{color:var(--text2)}
+.divider{height:1px;background:var(--border);margin:1.25rem 0}
+.sticky-sidebar{position:sticky;top:calc(var(--nav-h) + 16px)}
+.z1{position:relative;z-index:1}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shimmer{background:linear-gradient(90deg,var(--surf) 25%,var(--surf2) 50%,var(--surf) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@media(max-width:768px){
+  .hero-section{min-height:auto;padding:2.5rem 0}
+  .glass{border-radius:var(--r)}
+  .timeline{padding-left:1.8rem}
+  .chat-wrap{height:calc(100vh - 185px)}
+  .display-serif{font-size:clamp(1.8rem,5vw,2.5rem)!important}
+}
+/* ============================================================ AI ASSISTANT PANEL */
+#aiPanel{position:fixed;right:-380px;top:0;bottom:0;width:360px;z-index:9999;transition:right .35s cubic-bezier(.4,0,.2,1);
+  background:var(--bg2);border-left:1px solid var(--border2);display:flex;flex-direction:column;padding-top:var(--nav-h)}
+#aiPanel.open{right:0;box-shadow:-20px 0 60px rgba(0,0,0,.4)}
+.ai-panel-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:rgba(94,255,196,.04)}
+/* ============================================================ PROGRESS STEPS */
+.step-indicator{display:flex;align-items:center;gap:.4rem;margin-bottom:1.5rem}
+.step-dot{width:9px;height:9px;border-radius:50%;background:var(--border2);transition:var(--trans)}
+.step-dot.active{background:var(--accent);box-shadow:0 0 10px var(--glow)}
+.step-dot.done{background:var(--accent2)}
+/* ============================================================ ANALYTICS */
+.chart-bar{display:flex;align-items:flex-end;gap:6px;height:120px;padding:0 .5rem}
+.bar-col{flex:1;border-radius:6px 6px 0 0;background:linear-gradient(to top,var(--accent),var(--accent2));min-width:20px;transition:height .8s cubic-bezier(.4,0,.2,1);cursor:pointer;position:relative}
+.bar-col:hover{filter:brightness(1.2)}
+.bar-label{font-size:.65rem;color:var(--text2);text-align:center;margin-top:.35rem;font-family:var(--font-m)}
+/* ============================================================ TRANSLATION */
+.lang-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.75rem;padding:.25rem .7rem;border-radius:100px;background:rgba(139,92,246,.12);color:var(--accent2);border:1px solid var(--accent2)}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="grid-bg"></div>
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- Payment Modal -->
+<div id="payModal">
+  <div class="pay-box">
+    <div class="pay-header">
+      <div style="font-size:1.8rem;margin-bottom:.4rem">🔐</div>
+      <h4 style="color:#041020;font-weight:800;margin:0">Secure Payment</h4>
+      <div style="color:#041020;opacity:.75;font-size:.85rem;margin-top:.2rem">SmartTrip AI Gateway</div>
+    </div>
+    <div class="p-4 text-center">
+      <div class="spin mx-auto mb-3" style="width:38px;height:38px;border-width:3px"></div>
+      <div style="font-weight:700;font-size:1.05rem" id="modalPayAmt">$0.00</div>
+      <div style="color:var(--text2);font-size:.82rem;margin-top:.35rem">Processing your secure transaction...</div>
+      <div class="d-flex align-items-center justify-content-center gap-2 mt-3" style="color:var(--text2);font-size:.72rem">
+        <span>🔒 256-bit SSL</span><span>·</span><span>PCI-DSS Compliant</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Assistant Slide Panel -->
+<div id="aiPanel">
+  <div class="ai-panel-header">
+    <div>
+      <div style="font-weight:700;font-size:.95rem">🤖 AI Travel Assistant</div>
+      <div style="color:var(--accent);font-size:.72rem;font-family:var(--font-m)">● Online · Gemini Powered</div>
+    </div>
+    <button class="btn btn-glass-custom btn-sm" onclick="toggleAI()">✕ Close</button>
+  </div>
+  <div class="ai-chat-wrap" style="flex:1;overflow:hidden">
+    <div id="aiPanelMsgs" style="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.6rem;height:calc(100% - 70px)">
+      <div class="msg msg-bot">Hi! I'm your AI travel assistant 🌍 Ask me anything about destinations, travel tips, budgets, visas, or let me help plan your perfect trip!</div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding:.75rem;display:flex;gap:.5rem;align-items:center">
+      <input type="text" id="aiPanelInput" class="form-control" placeholder="Ask anything about travel..." style="flex:1;padding:.55rem .85rem;font-size:.85rem" onkeydown="if(event.key==='Enter')sendAIPanel()">
+      <button class="btn btn-primary-custom btn-sm" onclick="sendAIPanel()">→</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg sticky-top" id="mainNav">
+  <div class="container-fluid px-3 px-md-4">
+    <a class="navbar-brand" href="#" onclick="nav('pgHome')">
+      <span class="brand-text">SmartTrip</span><span style="color:var(--gold)"> AI</span>
+      <span style="font-size:.58rem;vertical-align:super;font-family:var(--font-m);color:var(--accent2);margin-left:2px">v2</span>
+    </a>
+    <div class="d-flex gap-2 align-items-center ms-auto">
+      <!-- AI assistant toggle -->
+      <button class="btn btn-glass-custom btn-sm" onclick="toggleAI()" title="AI Assistant" style="font-size:.8rem;padding:.4rem .8rem">🤖 AI</button>
+      <!-- Theme toggle -->
+      <button class="btn btn-glass-custom btn-sm" onclick="cycleTheme()" id="themeBtn" title="Toggle theme" style="font-size:.85rem;padding:.4rem .7rem">🌙</button>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navCollapse" style="color:var(--accent);padding:.35rem">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect y="5" width="24" height="2" rx="1"/><rect y="11" width="24" height="2" rx="1"/><rect y="17" width="24" height="2" rx="1"/></svg>
+      </button>
+    </div>
+    <div class="collapse navbar-collapse" id="navCollapse">
+      <ul class="navbar-nav gap-1 align-items-center" id="navGuest">
+        <li><a class="nav-link" href="#" onclick="nav('pgHome')">Home</a></li>
+        <li><a class="nav-link" href="#" onclick="nav('pgSignup')">Sign Up</a></li>
+        <li><button class="btn btn-primary-custom btn-sm ms-2" onclick="nav('pgLogin')">Login</button></li>
+      </ul>
+      <ul class="navbar-nav gap-1 align-items-center" id="navUser" style="display:none!important">
+        <li><a class="nav-link" href="#" onclick="nav('pgDash')">Dashboard</a></li>
+        <li><a class="nav-link" href="#" onclick="nav('pgTrips')">Trips</a></li>
+        <li><a class="nav-link" href="#" onclick="nav('pgExpense')">Budget</a></li>
+        <li><a class="nav-link" href="#" onclick="nav('pgMap')">Map</a></li>
+        <li><button class="btn btn-primary-custom btn-sm ms-1" onclick="reqAuth('pgPlan')">+ Plan</button></li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle d-flex align-items-center gap-2 ms-1" data-bs-toggle="dropdown">
+            <div class="avatar" id="navAv">U</div>
+            <span class="d-lg-none" style="color:var(--text)">Account</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);min-width:190px;padding:.45rem">
+            <li><a class="dropdown-item rounded py-2" href="#" onclick="nav('pgProfile')" style="color:var(--text)">👤 My Profile</a></li>
+            <li><a class="dropdown-item rounded py-2 d-flex justify-content-between" href="#" onclick="nav('pgNotifs')" style="color:var(--text)">🔔 Notifications <span class="badge" id="navBadge" style="background:var(--accent3);font-size:.62rem">0</span></a></li>
+            <li><a class="dropdown-item rounded py-2" href="#" onclick="nav('pgWishlist')" style="color:var(--text)">❤️ Wishlist</a></li>
+            <li><a class="dropdown-item rounded py-2" href="#" onclick="nav('pgCurrency')" style="color:var(--text)">💱 Currency</a></li>
+            <li><a class="dropdown-item rounded py-2" href="#" onclick="nav('pgSettings')" style="color:var(--text)">⚙️ Settings</a></li>
+            <li><hr style="border-color:var(--border);margin:.4rem 0"></li>
+            <li><a class="dropdown-item rounded py-2" href="#" onclick="doLogout()" style="color:var(--accent3)">🚪 Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ===================== 1. SPLASH ===================== -->
+<div id="pgSplash" class="page active" style="z-index:100">
+  <div class="splash-logo mb-4">✈️</div>
+  <h1 class="display-serif" style="font-size:2.7rem;margin-bottom:.4rem"><span class="grad">SmartTrip AI</span></h1>
+  <p style="color:var(--text2);font-size:.9rem;margin-bottom:1.8rem;font-family:var(--font-m)">Next-Generation Travel Intelligence</p>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+  <p style="color:var(--text2);font-size:.7rem;margin-top:1.2rem;font-family:var(--font-m);letter-spacing:.12em" class="pulse-anim">INITIALIZING AI ENGINE...</p>
+</div>
+
+<!-- ===================== 2. HOME ===================== -->
+<div id="pgHome" class="page">
+  <section class="hero-section">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6 z1">
+          <div class="section-label">✦ AI-Powered Travel Planning</div>
+          <h1 class="display-serif" style="font-size:clamp(2.8rem,6.5vw,5rem);margin-bottom:1.1rem">
+            Travel smarter.<br><span class="grad-gold">Plan better.</span>
+          </h1>
+          <p style="color:var(--text2);font-size:1.05rem;line-height:1.75;max-width:480px;margin-bottom:1.8rem">
+            AI-generated itineraries, live weather, interactive maps, smart budgeting, and travel buddy matching — beautifully unified.
+          </p>
+          <div class="d-flex gap-3 flex-wrap mb-4">
+            <button class="btn btn-primary-custom btn-lg" onclick="reqAuth('pgPlan')">Start Planning ✦</button>
+            <button class="btn btn-outline-custom btn-lg" onclick="nav('pgSignup')">Join Free</button>
+          </div>
+          <div class="d-flex gap-4 flex-wrap" style="color:var(--text2);font-size:.82rem">
+            <span><span style="color:var(--accent)">✓</span> Free to start</span>
+            <span><span style="color:var(--accent)">✓</span> Gemini AI powered</span>
+            <span><span style="color:var(--accent)">✓</span> Live weather data</span>
+            <span><span style="color:var(--accent)">✓</span> 195 countries</span>
+          </div>
+        </div>
+        <div class="col-lg-6 z1">
+          <div class="glass p-4">
+            <div class="section-label mb-3">⚡ Quick AI Search</div>
+            <div class="mb-3">
+              <label class="form-label">Where to?</label>
+              <div style="position:relative">
+                <input type="text" class="form-control" id="homeDest" placeholder="Kyoto, Swiss Alps, Bali...">
+                <button onclick="voiceSearch('homeDest')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--text2)" title="Voice Search">🎤</button>
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-6"><label class="form-label">Duration</label>
+                <select class="form-select" id="homeDays">
+                  <option value="3">3 Days</option><option value="5" selected>5 Days</option>
+                  <option value="7">1 Week</option><option value="10">10 Days</option><option value="14">2 Weeks</option>
+                </select>
+              </div>
+              <div class="col-6"><label class="form-label">Budget ($)</label>
+                <input type="number" class="form-control" id="homeBudget" value="5000" min="500">
+              </div>
+            </div>
+            <div class="mb-3"><label class="form-label">Travel Style</label>
+              <select class="form-select" id="homeStyle">
+                <option>Solo Explorer</option><option>Couple Getaway</option>
+                <option>Friends Trip</option><option>Family Vacation</option>
+              </select>
+            </div>
+            <button class="btn btn-primary-custom w-100" style="padding:.85rem" onclick="homeQuickPlan()">Generate AI Itinerary ✨</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Stats -->
+  <div style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.4rem 0;background:rgba(22,37,64,.3)">
+    <div class="container">
+      <div class="row text-center g-3">
+        <div class="col-6 col-md-3"><div class="stat-num grad">12,000+</div><div style="color:var(--text2);font-size:.78rem;margin-top:.15rem">Trips Planned</div></div>
+        <div class="col-6 col-md-3"><div class="stat-num" style="color:var(--gold)">195</div><div style="color:var(--text2);font-size:.78rem;margin-top:.15rem">Countries</div></div>
+        <div class="col-6 col-md-3"><div class="stat-num" style="color:var(--pink)">98%</div><div style="color:var(--text2);font-size:.78rem;margin-top:.15rem">Satisfaction</div></div>
+        <div class="col-6 col-md-3"><div class="stat-num" style="color:var(--accent2)">4.9★</div><div style="color:var(--text2);font-size:.78rem;margin-top:.15rem">Avg Rating</div></div>
+      </div>
+    </div>
+  </div>
+  <!-- Featured Destinations -->
+  <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div><div class="section-label">✦ Curated Picks</div><h2 class="display-serif" style="font-size:1.9rem;margin:0">Featured Destinations</h2></div>
+      <button class="btn btn-glass-custom btn-sm" onclick="nav('pgPlan')">Explore All →</button>
+    </div>
+    <div class="row g-3" id="featuredDests"></div>
+  </div>
+  <!-- Features -->
+  <div class="container mt-5 pb-3">
+    <div class="text-center mb-5">
+      <div class="section-label">✦ Platform Features</div>
+      <h2 class="display-serif" style="font-size:1.9rem">Everything you need to travel smarter</h2>
+    </div>
+    <div class="row g-4" id="featureGrid"></div>
+  </div>
+</div>
+
+<!-- ===================== 3. SIGNUP ===================== -->
+<div id="pgSignup" class="page">
+  <div class="container mt-5 pt-3">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="glass p-4 p-lg-5">
+          <div class="text-center mb-4">
+            <div class="section-label">✦ Get Started Free</div>
+            <h2 class="display-serif" style="font-size:2.1rem"><span class="grad">Create Account</span></h2>
+            <p style="color:var(--text2);font-size:.9rem">Join the future of travel planning</p>
+          </div>
+          <form id="signupForm" onsubmit="doSignup(event)">
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6"><label class="form-label">Full Name *</label><input type="text" id="suName" class="form-control" placeholder="John Doe" required minlength="2"></div>
+              <div class="col-sm-6"><label class="form-label">Phone *</label><input type="tel" id="suPhone" class="form-control" placeholder="+91 98765 43210" required></div>
+            </div>
+            <div class="mb-3"><label class="form-label">Email *</label><input type="email" id="suEmail" class="form-control" placeholder="john@example.com" required></div>
+            <div class="mb-3"><label class="form-label">Password *</label><input type="password" id="suPass" class="form-control" placeholder="Min. 6 characters" minlength="6" required></div>
+            <div class="mb-3"><label class="form-label">Confirm Password *</label><input type="password" id="suConf" class="form-control" placeholder="Re-enter password" required></div>
+            <div class="mb-4"><label class="form-label">Profile Photo <span style="color:var(--text2)">(optional)</span></label><input type="file" id="suPhoto" class="form-control" accept="image/*" onchange="previewPhoto(this)">
+              <div id="photoPreview" style="display:none;margin-top:.6rem;text-align:center"><img id="previewImg" style="width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)"></div>
+            </div>
+            <button type="submit" class="btn btn-primary-custom w-100 mb-3" style="padding:.85rem">Create Account 🚀</button>
+            <div class="text-center" style="color:var(--text2);font-size:.88rem">Already have an account? <a href="#" onclick="nav('pgLogin')" style="color:var(--accent)">Login</a></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 4. LOGIN ===================== -->
+<div id="pgLogin" class="page">
+  <div class="container mt-5 pt-3">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-5">
+        <div class="glass p-4 p-lg-5">
+          <div class="text-center mb-4">
+            <div class="section-label">✦ Secure Access</div>
+            <h2 class="display-serif" style="font-size:2.1rem"><span class="grad">Welcome Back</span></h2>
+            <p style="color:var(--text2);font-size:.9rem">Login to access your journeys</p>
+          </div>
+          <form onsubmit="doLogin(event)">
+            <div class="mb-3"><label class="form-label">Email</label><input type="email" id="liEmail" class="form-control" placeholder="you@example.com" required></div>
+            <div class="mb-3"><label class="form-label">Password</label><input type="password" id="liPass" class="form-control" placeholder="Your password" required></div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <label class="d-flex align-items-center gap-2 cursor" style="font-size:.83rem;color:var(--text2)"><input type="checkbox" id="remMe" style="accent-color:var(--accent)"> Remember me</label>
+              <a href="#" onclick="toast('Password reset link sent to your email!','success')" style="color:var(--accent);font-size:.83rem;text-decoration:none">Forgot password?</a>
+            </div>
+            <button type="submit" class="btn btn-primary-custom w-100 mb-4" style="padding:.85rem">Secure Login ✈️</button>
+          </form>
+          <div class="d-flex align-items-center gap-3 mb-4"><div class="divider flex-grow-1" style="margin:0"></div><span style="color:var(--text2);font-size:.78rem">OR</span><div class="divider flex-grow-1" style="margin:0"></div></div>
+          <button class="btn btn-glass-custom w-100 mb-2 d-flex align-items-center justify-content-center gap-2" onclick="socialLogin('Google')">
+            <svg width="17" height="17" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Continue with Google
+          </button>
+          <button class="btn btn-glass-custom w-100 d-flex align-items-center justify-content-center gap-2" onclick="socialLogin('Phone')">📱 Login with Phone OTP</button>
+          <div class="text-center mt-4" style="color:var(--text2);font-size:.88rem">No account? <a href="#" onclick="nav('pgSignup')" style="color:var(--accent)">Sign Up free</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 5. DASHBOARD ===================== -->
+<div id="pgDash" class="page">
+  <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-end mb-5 flex-wrap gap-3">
+      <div>
+        <div class="section-label">✦ Your Hub</div>
+        <h2 class="display-serif" style="font-size:2.3rem;margin-bottom:.2rem">Hey, <span class="grad" id="dashName">Traveler</span>! 👋</h2>
+        <p style="color:var(--text2);font-size:.9rem">The world is waiting. What's your next move?</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-glass-custom btn-sm" onclick="exportDashboard()">📤 Export</button>
+        <button class="btn btn-primary-custom" onclick="nav('pgPlan')">+ Plan Trip</button>
+      </div>
+    </div>
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3"><div class="glass p-3 text-center h-100"><div class="stat-num grad" id="dsTripCount">0</div><div style="color:var(--text2);font-size:.72rem;margin-top:.2rem;text-transform:uppercase;letter-spacing:.08em">Total Trips</div></div></div>
+      <div class="col-6 col-md-3"><div class="glass p-3 text-center h-100"><div class="stat-num" style="color:var(--gold)" id="dsExpAmt">$0</div><div style="color:var(--text2);font-size:.72rem;margin-top:.2rem;text-transform:uppercase;letter-spacing:.08em">Total Spent</div></div></div>
+      <div class="col-6 col-md-3"><div class="glass p-3 text-center h-100"><div class="stat-num" style="color:var(--pink)" id="dsWishCount">0</div><div style="color:var(--text2);font-size:.72rem;margin-top:.2rem;text-transform:uppercase;letter-spacing:.08em">Wishlisted</div></div></div>
+      <div class="col-6 col-md-3"><div class="glass p-3 text-center h-100"><div class="stat-num" style="color:var(--accent2)" id="dsAlerts">0</div><div style="color:var(--text2);font-size:.72rem;margin-top:.2rem;text-transform:uppercase;letter-spacing:.08em">Alerts</div></div></div>
+    </div>
+    <!-- Weather Widget -->
+    <div id="dashWeather" class="weather-widget mb-4" style="display:none">
+      <div class="d-flex justify-content-between align-items-center">
+        <div><div class="section-label mb-1">🌤️ Live Weather · Your Location</div><div id="dashWeatherInfo" style="font-family:var(--font-m);font-size:1.3rem;font-weight:700;color:var(--accent)">Loading...</div></div>
+        <div style="text-align:right"><div style="font-size:2.5rem" id="dashWeatherIcon">🌤️</div></div>
+      </div>
+    </div>
+    <!-- Spending Analytics -->
+    <div class="row g-4 mb-4" id="analyticsSection" style="display:none">
+      <div class="col-12"><div class="glass p-4">
+        <h6 style="font-weight:700;margin-bottom:1rem">📊 Spending Analytics</h6>
+        <div class="chart-bar" id="spendingChart"></div>
+        <div class="d-flex gap-2 mt-1" id="chartLabels"></div>
+      </div></div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="row g-3 mb-4">
+          <div class="col-md-4"><div class="glass p-4 h-100 cursor" onclick="nav('pgPlan')" style="text-align:center">
+            <div style="font-size:1.9rem;margin-bottom:.65rem">🤖</div>
+            <h5 style="font-weight:700;margin-bottom:.35rem;font-size:.95rem">AI Planner</h5>
+            <p style="color:var(--text2);font-size:.8rem;margin:0">Generate full itineraries instantly</p>
+            <div style="color:var(--accent);font-size:.78rem;margin-top:.65rem;font-weight:600">Start →</div>
+          </div></div>
+          <div class="col-md-4"><div class="glass p-4 h-100 cursor" onclick="nav('pgTrips')" style="text-align:center">
+            <div style="font-size:1.9rem;margin-bottom:.65rem">✈️</div>
+            <h5 style="font-weight:700;margin-bottom:.35rem;font-size:.95rem">My Trips</h5>
+            <p style="color:var(--text2);font-size:.8rem;margin:0"><span id="dashTripCount2">0</span> journeys saved</p>
+            <div style="color:var(--accent);font-size:.78rem;margin-top:.65rem;font-weight:600">View All →</div>
+          </div></div>
+          <div class="col-md-4"><div class="glass p-4 h-100 cursor" onclick="nav('pgExpense')" style="text-align:center">
+            <div style="font-size:1.9rem;margin-bottom:.65rem">💰</div>
+            <h5 style="font-weight:700;margin-bottom:.35rem;font-size:.95rem">Expenses</h5>
+            <p style="color:var(--text2);font-size:.8rem;margin:0">Smart budget analytics</p>
+            <div style="color:var(--accent);font-size:.78rem;margin-top:.65rem;font-weight:600">Track →</div>
+          </div></div>
+        </div>
+        <div class="glass p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 style="font-weight:700;margin:0;font-size:.95rem">👥 Travel Buddy Suggestions</h5>
+            <button class="btn btn-glass-custom btn-sm" onclick="nav('pgBuddies')">View All</button>
+          </div>
+          <div class="row g-3" id="dashBuddies"></div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="glass p-4 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 style="font-weight:700;margin:0;font-size:.95rem">🔔 Recent Alerts</h5>
+            <button class="btn btn-glass-custom btn-sm" onclick="nav('pgNotifs')">All</button>
+          </div>
+          <div id="dashNotifPreview" class="d-flex flex-column gap-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 6. PLAN ===================== -->
+<div id="pgPlan" class="page">
+  <div class="container mt-5">
+    <button class="btn btn-glass-custom mb-4" onclick="nav('pgDash')">← Dashboard</button>
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="text-center mb-4">
+          <div class="d-flex justify-content-center gap-2 mb-3">
+            <div class="step-dot done" id="st1"></div>
+            <div style="height:2px;width:30px;background:var(--border2);margin-top:3px"></div>
+            <div class="step-dot" id="st2"></div>
+            <div style="height:2px;width:30px;background:var(--border2);margin-top:3px"></div>
+            <div class="step-dot" id="st3"></div>
+          </div>
+          <div class="section-label">✦ Step 1 of 3</div>
+          <h2 class="display-serif" style="font-size:2.2rem"><span class="grad">Set Trip Parameters</span></h2>
+          <p style="color:var(--text2);font-size:.9rem">Fill in your journey details and let AI do the magic</p>
+        </div>
+        <div class="glass p-4 p-lg-5">
+          <form onsubmit="event.preventDefault();proceedToMood()">
+            <div class="mb-3">
+              <label class="form-label">Primary Destination *</label>
+              <div style="position:relative">
+                <input type="text" class="form-control" id="planDest" placeholder="e.g., Kyoto Japan, Swiss Alps, Santorini" required>
+                <button type="button" onclick="voiceSearch('planDest')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--text2)" title="Voice">🎤</button>
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6"><label class="form-label">Start Date *</label><input type="date" class="form-control" id="planDate" required></div>
+              <div class="col-md-6"><label class="form-label">Duration (days) *</label>
+                <input type="number" class="form-control" id="planDays" min="1" max="30" value="5" required
+                  oninput="document.getElementById('budgetDisp').textContent=document.getElementById('planBudget').value">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label d-flex justify-content-between">
+                <span>Total Budget</span>
+                <span style="color:var(--accent);font-family:var(--font-m)">$<span id="budgetDisp">5000</span></span>
+              </label>
+              <input type="range" class="form-range" id="planBudget" min="500" max="50000" step="500" value="5000"
+                oninput="document.getElementById('budgetDisp').textContent=this.value" style="accent-color:var(--accent)">
+              <div class="d-flex justify-content-between" style="color:var(--text2);font-size:.72rem;margin-top:.25rem"><span>$500</span><span>$50,000</span></div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6"><label class="form-label">Travel Companion *</label>
+                <select class="form-select" id="planComp">
+                  <option>Solo</option><option>Couple</option><option>Friends</option><option>Family</option><option>Group</option>
+                </select>
+              </div>
+              <div class="col-md-6"><label class="form-label">Number of Travelers *</label><input type="number" class="form-control" id="planCount" min="1" max="20" value="1" required></div>
+            </div>
+            <div class="mb-3"><label class="form-label">Accommodation</label>
+              <select class="form-select" id="planAccom">
+                <option>Luxury Hotel (5★)</option><option selected>Premium Hotel (4★)</option>
+                <option>Budget Hotel (3★)</option><option>Hostel / Backpacker</option><option>Airbnb / Villa</option>
+              </select>
+            </div>
+            <div class="mb-4"><label class="form-label">Special Requirements</label>
+              <input type="text" class="form-control" id="planNotes" placeholder="e.g., vegetarian, wheelchair access, pet friendly...">
+            </div>
+            <button type="submit" class="btn btn-primary-custom w-100" style="padding:.85rem">Next: Select Vibe →</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 7. MOOD ===================== -->
+<div id="pgMood" class="page">
+  <div class="container mt-5">
+    <button class="btn btn-glass-custom mb-4" onclick="nav('pgPlan')">← Back</button>
+    <div class="text-center mb-4">
+      <div class="d-flex justify-content-center gap-2 mb-3">
+        <div class="step-dot done"></div><div style="height:2px;width:30px;background:var(--border2);margin-top:3px"></div>
+        <div class="step-dot done"></div><div style="height:2px;width:30px;background:var(--border2);margin-top:3px"></div>
+        <div class="step-dot active"></div>
+      </div>
+      <div class="section-label">✦ Step 2 of 3</div>
+      <h2 class="display-serif" style="font-size:2.2rem"><span class="grad">Select Trip Vibe</span></h2>
+      <p style="color:var(--text2);font-size:.9rem">Choose all that resonate — AI personalizes your plan</p>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <div class="row g-3" id="moodGrid"></div>
+        <div class="text-center mt-5">
+          <button class="btn btn-primary-custom btn-lg px-5" style="padding:.85rem 2.8rem;font-size:1rem" onclick="startAI()">🚀 Generate AI Itinerary</button>
+          <p style="color:var(--text2);font-size:.78rem;margin-top:.65rem">Powered by Gemini AI · Takes ~8 seconds</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 8. AI RESULT ===================== -->
+<div id="pgAI" class="page">
+  <div id="aiLoad" class="container mt-5 text-center py-5">
+    <div class="spin mx-auto mb-4" style="width:68px;height:68px;border-width:5px"></div>
+    <h2 class="display-serif" style="font-size:1.9rem"><span class="grad">AI is generating...</span></h2>
+    <p style="color:var(--text2);margin-top:.65rem">Crafting your personalized plan for <strong id="aiLoadDest">your destination</strong></p>
+    <div style="max-width:340px;margin:1.8rem auto;background:var(--surf);border-radius:var(--r);padding:.9rem 1.1rem;border:1px solid var(--border)">
+      <div style="font-family:var(--font-m);font-size:.73rem;color:var(--accent)" class="pulse-anim" id="aiLoadMsg">Analyzing destination parameters...</div>
+    </div>
+    <div style="max-width:300px;margin:0 auto"><div class="stat-bar-track"><div class="stat-bar-fill" id="aiProgressBar" style="width:0%;transition:width .5s ease"></div></div></div>
+  </div>
+  <div id="aiResult" style="display:none">
+    <div class="container mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <button class="btn btn-glass-custom" onclick="nav('pgMood')">← Modify</button>
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-glass-custom" onclick="saveTrip()">💾 Save</button>
+          <button class="btn btn-glass-custom" onclick="shareTrip()">🔗 Share</button>
+          <button class="btn btn-outline-custom" onclick="addToWishlist(S.currentPlan?.destinationName)">❤️ Wishlist</button>
+          <button class="btn btn-primary-custom" onclick="nav('pgItinerary')">Itinerary →</button>
+        </div>
+      </div>
+    </div>
+    <div class="position-relative" style="height:52vh;min-height:340px;overflow:hidden">
+      <img id="resHeroImg" src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1600&q=80" style="width:100%;height:100%;object-fit:cover;filter:brightness(.52)">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(6,12,26,1) 0%,rgba(6,12,26,.15) 60%,transparent 100%)"></div>
+      <div class="position-absolute bottom-0 start-0 p-4 p-md-5" style="max-width:800px">
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <span class="badge-glow">✅ AI Verified Plan</span>
+          <span class="chip" style="background:rgba(94,255,196,.1);border-color:var(--accent)">Live Weather Active</span>
+        </div>
+        <h1 class="display-serif" style="font-size:clamp(1.9rem,5.5vw,3.8rem);margin-bottom:.4rem" id="resName">Destination</h1>
+        <p style="color:rgba(255,255,255,.78);font-size:.97rem;line-height:1.65;margin:0" id="resDesc">Description</p>
+      </div>
+    </div>
+    <div class="container mt-4">
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3"><div class="glass p-3 text-center"><div style="color:var(--text2);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem">🌤️ Live Weather</div><div style="font-family:var(--font-m);font-size:1.35rem;font-weight:700;color:var(--accent)" id="resWeather">—</div></div></div>
+        <div class="col-6 col-md-3"><div class="glass p-3 text-center"><div style="color:var(--text2);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem">💰 Est. Cost</div><div style="font-family:var(--font-m);font-size:1.35rem;font-weight:700" class="grad-gold" id="resCost">—</div></div></div>
+        <div class="col-6 col-md-3"><div class="glass p-3 text-center"><div style="color:var(--text2);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem">📅 Best Season</div><div style="font-family:var(--font-m);font-size:1rem;font-weight:700;color:var(--pink)" id="resSeason">—</div></div></div>
+        <div class="col-6 col-md-3"><div class="glass p-3 text-center"><div style="color:var(--text2);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem">⏱ Duration</div><div style="font-family:var(--font-m);font-size:1.35rem;font-weight:700;color:var(--gold)" id="resDuration">—</div></div></div>
+      </div>
+      <div class="row g-4 mb-4">
+        <div class="col-lg-6"><div class="glass p-4 h-100"><h5 style="font-weight:700;margin-bottom:.9rem;font-size:.95rem">💡 Pro Travel Tips</h5><ul id="resTips" class="d-flex flex-column gap-3" style="list-style:none;padding:0;margin:0"></ul></div></div>
+        <div class="col-lg-6"><div class="glass p-4 h-100"><h5 style="font-weight:700;margin-bottom:.9rem;font-size:.95rem">💰 Budget Breakdown</h5><div id="resBudget" class="d-flex flex-column gap-3"></div></div></div>
+      </div>
+      <div class="text-center mb-5">
+        <button class="btn btn-primary-custom btn-lg px-5" style="padding:.85rem 2.8rem" onclick="nav('pgItinerary')">View Day-wise Itinerary 🗺️</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 9. ITINERARY ===================== -->
+<div id="pgItinerary" class="page">
+  <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <button class="btn btn-glass-custom" onclick="nav('pgAI')">← Overview</button>
+      <div class="d-flex gap-2">
+        <button class="btn btn-glass-custom" onclick="exportItinerary()">📄 Export PDF</button>
+        <button class="btn btn-glass-custom" onclick="nav('pgMap')">🗺️ Full Map</button>
+        <button class="btn btn-gold" onclick="setupBooking()">Book Now →</button>
+      </div>
+    </div>
+    <div class="section-label">✦ Your AI Plan</div>
+    <h2 class="display-serif mb-1" style="font-size:1.9rem">Day-wise Itinerary</h2>
+    <p style="color:var(--text2);margin-bottom:2rem;font-size:.9rem">AI-personalized schedule — exactly <span id="itinDayCount">N</span> days</p>
+    <div class="row g-4">
+      <div class="col-lg-7"><div class="timeline" id="itineraryList"></div></div>
+      <div class="col-lg-5">
+        <div class="glass p-4 sticky-sidebar">
+          <h6 style="font-weight:700;margin-bottom:.9rem;font-size:.88rem">📍 Route Map</h6>
+          <div class="map-wrap" id="itinMap" style="height:340px"></div>
+          <button class="btn btn-glass-custom w-100 mt-3 btn-sm" onclick="nav('pgMap')">Open Full Map</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 10. BUDDIES ===================== -->
+<div id="pgBuddies" class="page">
+  <div class="container mt-5">
+    <button class="btn btn-glass-custom mb-4" onclick="nav('pgDash')">← Dashboard</button>
+    <div class="text-center mb-5">
+      <div class="section-label">✦ Find Your People</div>
+      <h2 class="display-serif" style="font-size:2.1rem"><span class="grad">Travel Buddy Matcher</span></h2>
+      <p style="color:var(--text2);font-size:.9rem">Connect with verified travelers heading to the same destination</p>
+    </div>
+    <div class="glass p-3 mb-4 d-flex gap-3 flex-wrap align-items-center">
+      <input type="text" class="form-control" style="max-width:220px" placeholder="Filter by destination..." id="buddyFilter" oninput="renderBuddies()">
+      <select class="form-select" style="max-width:150px" id="buddyAgeFilter" onchange="renderBuddies()">
+        <option value="">Any Age</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36+">36+</option>
+      </select>
+      <div class="d-flex gap-2 flex-wrap" id="buddyStyleFilters">
+        <span class="chip active" onclick="toggleBuddyFilter(this,'All')">All</span>
+        <span class="chip" onclick="toggleBuddyFilter(this,'Solo')">Solo</span>
+        <span class="chip" onclick="toggleBuddyFilter(this,'Group')">Group</span>
+        <span class="chip" onclick="toggleBuddyFilter(this,'Couple')">Couple</span>
+      </div>
+    </div>
+    <div class="row g-4" id="buddiesGrid"></div>
+  </div>
+</div>
+
+<!-- ===================== 11. BUDDY PROFILE ===================== -->
+<div id="pgBuddyProfile" class="page">
+  <div class="container mt-5">
+    <button class="btn btn-glass-custom mb-4" onclick="nav('pgBuddies')">← Back to Matches</button>
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="glass overflow-hidden">
+          <div class="prof-banner" style="height:110px;border-radius:var(--r2) var(--r2) 0 0"></div>
+          <div class="p-4 text-center" style="margin-top:-50px">
+            <img id="bpImg" src="" class="rounded-circle mb-3" style="width:96px;height:96px;object-fit:cover;border:4px solid var(--bg2)">
+            <h3 style="font-weight:800;margin-bottom:.2rem;font-size:1.4rem" id="bpName">Name</h3>
+            <div style="color:var(--accent);font-size:.88rem;margin-bottom:1rem">📍 <span id="bpDest">Dest</span></div>
+            <div class="d-flex justify-content-center gap-4 mb-3 py-3" style="border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+              <div class="text-center"><div style="font-family:var(--font-m);font-weight:700;font-size:1.2rem;color:var(--accent)"><span id="bpMatch">95</span>%</div><div style="color:var(--text2);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em">Match</div></div>
+              <div class="text-center"><div style="font-family:var(--font-m);font-weight:700;font-size:1.2rem;color:var(--gold)">⭐ <span id="bpRating">4.8</span></div><div style="color:var(--text2);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em">Rating</div></div>
+              <div class="text-center"><div style="font-family:var(--font-m);font-weight:700;font-size:1.2rem;color:var(--pink)" id="bpAge">26</div><div style="color:var(--text2);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em">Age</div></div>
+            </div>
+            <p style="color:var(--text2);font-size:.88rem;line-height:1.6;margin-bottom:1rem" id="bpBio">Bio</p>
+            <div class="mb-3"><div style="color:var(--text2);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Interests</div><div id="bpInterests" class="d-flex flex-wrap justify-content-center gap-2"></div></div>
+            <button class="btn btn-primary-custom w-100" onclick="nav('pgChat')">💬 Start Chat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 12. CHAT ===================== -->
+<div id="pgChat" class="page">
+  <div class="container mt-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="glass overflow-hidden">
+          <div class="d-flex justify-content-between align-items-center p-3" style="border-bottom:1px solid var(--border);background:rgba(0,0,0,.18)">
+            <div class="d-flex align-items-center gap-3">
+              <button class="btn btn-glass-custom btn-sm" onclick="nav('pgBuddies')">← Back</button>
+              <img id="chatAv" src="" class="rounded-circle" style="width:42px;height:42px;object-fit:cover;border:2px solid var(--accent)">
+              <div><div style="font-weight:700;font-size:.9rem" id="chatName">Name</div><div style="color:var(--accent);font-size:.72rem">● Online</div></div>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-glass-custom btn-sm" onclick="toast('Voice call started!','success')">📞</button>
+              <button class="btn btn-glass-custom btn-sm" onclick="toast('Video call started!','success')">📹</button>
+              <button class="btn btn-glass-custom btn-sm" onclick="toast('Creating group chat...','info')">👥</button>
+            </div>
+          </div>
+          <div class="chat-messages" id="chatBox">
+            <div class="text-center mb-3"><span style="background:var(--surf2);border:1px solid var(--border);border-radius:100px;padding:.22rem .9rem;font-size:.72rem;color:var(--text2)">🔒 End-to-end encrypted · SmartTrip AI</span></div>
+          </div>
+          <div class="chat-input-row">
+            <button class="btn btn-glass-custom btn-sm" onclick="sendAttachment('📍 Location')" title="Share location">📍</button>
+            <button class="btn btn-glass-custom btn-sm" onclick="sendAttachment('📸 Photo')" title="Send photo">📸</button>
+            <input type="text" class="form-control" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChat()" style="flex:1">
+            <button class="btn btn-primary-custom btn-sm px-3" onclick="sendChat()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 13. BOOKING ===================== -->
+<div id="pgBooking" class="page">
+  <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <button class="btn btn-glass-custom mb-2" onclick="nav('pgItinerary')">← Itinerary</button>
+        <h2 class="display-serif" style="font-size:1.9rem;margin:0"><span class="grad">Secure Booking</span></h2>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="glass p-4 mb-4"><h5 style="font-weight:700;margin-bottom:.9rem;font-size:.95rem">🏨 Accommodation</h5><div id="bookHotels"></div></div>
+        <div class="glass p-4 mb-4"><h5 style="font-weight:700;margin-bottom:.9rem;font-size:.95rem">✈️ Transport</h5><div id="bookFlights"></div></div>
+        <div class="glass p-4"><h5 style="font-weight:700;margin-bottom:.9rem;font-size:.95rem">🎯 Activities</h5><div id="bookActivities"></div></div>
+      </div>
+      <div class="col-lg-4">
+        <div class="glass p-4 sticky-sidebar">
+          <h6 style="font-weight:700;margin-bottom:.9rem;font-size:.88rem">Price Summary</h6>
+          <div class="sum-row"><span style="color:var(--text2)">Accommodation</span><span id="sumHotel" style="font-weight:600">$0</span></div>
+          <div class="sum-row"><span style="color:var(--text2)">Transport</span><span id="sumFlight" style="font-weight:600">$0</span></div>
+          <div class="sum-row"><span style="color:var(--text2)">Activities</span><span id="sumAct" style="font-weight:600">$0</span></div>
+          <div class="sum-row"><span style="color:var(--text2)">Taxes & Fees</span><span id="sumTax" style="font-weight:600">$45</span></div>
+          <div class="sum-row">
+            <span style="font-weight:800;font-size:1.05rem">Total</span>
+            <span id="sumTotal" class="grad-gold" style="font-weight:800;font-size:1.25rem;font-family:var(--font-m)">$0</span>
+          </div>
+          <button class="btn btn-primary-custom w-100 mt-3" style="padding:.85rem" onclick="nav('pgPayment')">Secure Checkout 🔒</button>
+          <p style="color:var(--text2);font-size:.72rem;text-align:center;margin-top:.65rem">✓ Free cancellation up to 48h · Best price guarantee</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 14. PAYMENT ===================== -->
+<div id="pgPayment" class="page">
+  <div class="container mt-5">
+    <button class="btn btn-glass-custom mb-4" onclick="nav('pgBooking')">← Booking</button>
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="glass p-4 p-lg-5">
+          <h2 class="display-serif text-center mb-3" style="font-size:1.9rem"><span class="grad">Payment</span></h2>
+          <div style="background:rgba(94,255,196,.08);border:1px solid var(--accent);border-radius:var(--r);padding:.9rem;text-align:center;margin-bottom:1.4rem">
+            <div style="color:var(--text2);font-size:.78rem;margin-bottom:.2rem">Amount Due</div>
+            <div style="font-family:var(--font-m);font-size:1.9rem;font-weight:700" class="grad" id="payAmt">$0.00</div>
+          </div>
+          <div class="d-flex gap-2 mb-4">
+            <button class="btn btn-primary-custom flex-grow-1 btn-sm" id="tabCard" onclick="setPayTab('card')">💳 Card</button>
+            <button class="btn btn-glass-custom flex-grow-1 btn-sm" id="tabUpi" onclick="setPayTab('upi')">📱 UPI</button>
+            <button class="btn btn-glass-custom flex-grow-1 btn-sm" id="tabPaypal" onclick="setPayTab('paypal')">🅿️ PayPal</button>
+          </div>
+          <div id="formCard">
+            <div class="mb-3"><label class="form-label">Name on Card</label><input type="text" class="form-control" placeholder="John Doe"></div>
+            <div class="mb-3"><label class="form-label">Card Number</label><input type="text" class="form-control" placeholder="**** **** **** ****" maxlength="19" oninput="fmtCard(this)"></div>
+            <div class="row g-3 mb-4">
+              <div class="col-6"><label class="form-label">Expiry</label><input type="text" class="form-control" placeholder="MM/YY" maxlength="5"></div>
+              <div class="col-6"><label class="form-label">CVV</label><input type="password" class="form-control" placeholder="***" maxlength="4"></div>
+            </div>
+          </div>
+          <div id="formUpi" style="display:none"><div class="mb-4"><label class="form-label">UPI ID</label><input type="text" class="form-control" placeholder="yourname@upi"></div></div>
+          <div id="formPaypal" style="display:none"><div class="mb-4"><label class="form-label">PayPal Email</label><input type="email" class="form-control" placeholder="you@paypal.com"></div></div>
+          <button class="btn btn-primary-custom w-100 mb-3" style="padding:.85rem;font-size:.97rem" onclick="processPayment()">Pay Securely 🔒</button>
+          <div style="text-align:center;color:var(--text2);font-size:.74rem">🔒 256-bit AES · Razorpay Simulation · PCI-DSS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 15. EXPENSE TRACKER ===================== -->
+<div id="pgExpense" class="page">
+  <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div><div class="section-label">✦ Smart Finance</div><h2 class="display-serif" style="font-size:1.9rem;margin:0">Expense Tracker</h2></div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-glass-custom btn-sm" onclick="exportExpenses()">📤 Export CSV</button>
+        <button class="btn btn-glass-custom btn-sm" onclick="nav('pgDash')">← Dashboard</button>
+      </div>
+    </div>
+    <div class="row g-4 mb-4">
+      <div class="col-lg-8">
+        <div class="glass p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h6 style="font-weight:700;margin:0;font-size:.9rem">Budget Overview</h6>
+            <div class="d-flex align-items-center gap-2">
+              <label style="color:var(--text2);font-size:.78rem">Budget: $</label>
+              <input type="number" id="expLimit" value="5000" class="form-control" style="width:95px;padding:.38rem .65rem;font-size:.88rem" oninput="renderExp()">
+            </div>
+          </div>
+          <div class="row text-center g-3 mb-4">
+            <div class="col-4"><div style="color:var(--text2);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem">Budget</div><div class="stat-num" style="font-size:1.5rem" id="expBudgetDisp">$5,000</div></div>
+            <div class="col-4" style="border-left:1px solid var(--border);border-right:1px solid var(--border)"><div style="color:var(--text2);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem">Spent</div><div class="stat-num" style="font-size:1.5rem;color:var(--accent3)" id="expSpent">$0</div></div>
+            <div class="col-4"><div style="color:var(--text2);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem">Remaining</div><div class="stat-num" style="font-size:1.5rem;color:var(--accent)" id="expRem">$5,000</div></div>
+          </div>
+          <div class="d-flex justify-content-between mb-1" style="font-size:.78rem">
+            <span style="color:var(--text2)">Utilization</span>
+            <span style="font-family:var(--font-m);color:var(--accent)" id="expPct">0%</span>
+          </div>
+          <div class="stat-bar-track"><div class="stat-bar-fill" id="expBar" style="width:0%"></div></div>
+          <div class="row g-2 mt-3" id="expCatBreakdown"></div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="glass p-4">
+          <h6 style="font-weight:700;margin-bottom:.9rem;font-size:.9rem">➕ Log Expense</h6>
+          <div class="mb-3"><label class="form-label">Amount ($) *</label><input type="number" id="exAmt" class="form-control" placeholder="0.00" min="0.01" step="0.01"></div>
+          <div class="mb-3"><label class="form-label">Description *</label><input type="text" id="exDesc" class="form-control" placeholder="e.g. Dinner at restaurant"></div>
+          <div class="mb-3"><label class="form-label">Category</label>
+            <select id="exCat" class="form-select">
+              <option value="Food">🍽️ Food & Drinks</option><option value="Transport">🚕 Transport</option>
+              <option value="Hotel">🏨 Hotel</option><option value="Shopping">🛍️ Shopping</option>
+              <option value="Activities">🎫 Activities</option><option value="Misc">📦 Misc</option>
+            </select>
+          </div>
+          <div class="mb-3"><label class="form-label">Date</label><input type="date" id="exDate" class="form-control"></div>
+          <div class="mb-3"><label class="form-label">Trip Tag</label>
+            <select id="exTrip" class="form-select"><option value="">No trip</option></select>
+          </div>
+          <button class="btn btn-primary-custom w-100" onclick="addExpense()">Add Record</button>
+        </div>
+      </div>
+    </div>
+    <div class="glass p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h6 style="font-weight:700;margin:0;font-size:.9rem">Transaction History (<span id="expCount">0</span>)</h6>
+        <div class="d-flex gap-2">
+          <select id="expCatFilter" class="form-select form-select-sm" style="max-width:140px" onchange="renderExp()">
+            <option value="">All Categories</option>
+            <option>Food</option><option>Transport</option><option>Hotel</option>
+            <option>Shopping</option><option>Activities</option><option>Misc</option>
+          </select>
+          <input type="text" class="form-control form-control-sm" style="max-width:160px" placeholder="Search..." id="expSearch" oninput="renderExp()">
+        </div>
+      </div>
+      <div id="expList" class="d-flex flex-column gap-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 16. MAP ===================== -->
+<div id="pgMap" class="page">
+  <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <div>
+        <button class="btn btn-glass-custom mb-2" onclick="nav('pgDash')">← Back</button>
+        <h2 class="display-serif" style="font-size:1.9rem;margin:0"><span class="grad">Interactive Explorer</span></h2>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <span class="badge-glow pulse-anim">🟢 Live Mode</span>
+        <button class="btn btn-glass-custom btn-sm" onclick="locateMe()">📍 My Location</button>
+        <button class="btn btn-glass-custom btn-sm" onclick="mapSearch()">🔍 Search Place</button>
+      </div>
+    </div>
+    <div class="glass p-3 mb-4">
+      <div class="map-wrap" id="fullMap" style="height:62vh"></div>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-4"><div class="glass p-3 text-center cursor" onclick="toggleMapLayer('hotels')"><div style="font-size:1.65rem;margin-bottom:.4rem">🏨</div><h6 style="font-weight:700;margin-bottom:.2rem;font-size:.88rem">Hotels</h6><p style="color:var(--text2);font-size:.78rem;margin:0">AI-mapped accommodations</p></div></div>
+      <div class="col-md-4"><div class="glass p-3 text-center cursor" onclick="toggleMapLayer('restaurants')"><div style="font-size:1.65rem;margin-bottom:.4rem">🍽️</div><h6 style="font-weight:700;margin-bottom:.2rem;font-size:.88rem">Restaurants</h6><p style="color:var(--text2);font-size:.78rem;margin:0">Top-rated local cuisine</p></div></div>
+      <div class="col-md-4"><div class="glass p-3 text-center cursor" onclick="toggleMapLayer('attractions')"><div style="font-size:1.65rem;margin-bottom:.4rem">📍</div><h6 style="font-weight:700;margin-bottom:.2rem;font-size:.88rem">Attractions</h6><p style="color:var(--text2);font-size:.78rem;margin:0">Must-visit spots</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 17. MY TRIPS ===================== -->
+<div id="pgTrips" class="page">
+  <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <button class="btn btn-glass-custom mb-2" onclick="nav('pgDash')">← Dashboard</button>
+        <h2 class="display-serif" style="font-size:1.9rem;margin:0"><span class="grad">My Trips</span></h2>
+      </div>
+      <button class="btn btn-primary-custom" onclick="nav('pgPlan')">+ New Trip</button>
+    </div>
+    <div class="section-label mb-2">✦ Active & Upcoming</div>
+    <div class="row g-4 mb-5" id="activeTrips">
+      <div class="col-12 text-center" style="color:var(--text2);padding:3rem">No trips yet. <a href="#" onclick="nav('pgPlan')" style="color:var(--accent)">Plan your first adventure!</a></div>
+    </div>
+    <div class="section-label mb-2">✦ Past Trips</div>
+    <div class="row g-4" id="pastTrips">
+      <div class="col-md-6 col-lg-4">
+        <div class="glass p-0 overflow-hidden trip-card">
+          <div class="position-relative"><img src="https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=500&q=80" class="trip-img"><div class="trip-overlay"></div>
+            <div class="position-absolute bottom-0 start-0 p-3"><h5 style="font-weight:700;margin-bottom:.1rem;font-size:1rem">Mumbai</h5><div style="color:rgba(255,255,255,.6);font-size:.75rem">Jan 2026 · Completed ✓</div></div>
+          </div>
+          <div class="p-3"><button class="btn btn-glass-custom w-100 btn-sm" onclick="nav('pgReview')">Write Review ⭐</button></div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="glass p-0 overflow-hidden trip-card">
+          <div class="position-relative"><img src="https://images.unsplash.com/photo-1548013146-72479768bada?w=500&q=80" class="trip-img"><div class="trip-overlay"></div>
+            <div class="position-absolute bottom-0 start-0 p-3"><h5 style="font-weight:700;margin-bottom:.1rem;font-size:1rem">Darjeeling</h5><div style="color:rgba(255,255,255,.6);font-size:.75rem">Nov 2025 · Completed ✓</div></div>
+          </div>
+          <div class="p-3"><button class="btn btn-glass-custom w-100 btn-sm" onclick="nav('pgReview')">Write Review ⭐</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 18. WISHLIST ===================== -->
+<div id="pgWishlist" class="page">
+  <div class="container mt-5">
+    <button class="btn btn-glass-custom mb-4" onclick="nav('pgDash')">← Dashboard</button>
+    <div class="text-center mb-5">
+      <div class="section-label">✦ Dream Destinations</div>
+      <h2 class="display-serif" style="font-size:2.1rem"><span class="grad">My Wishlist</span></h2>
+      <p style="color:var(--text2);font-size:.9rem">Places saved for future adventures</p>
+    </div>
+    <div class="row g-4" id="wishGrid"></div>
+  </div>
+</div>
+
+<!-- ===================== 19. NOTIFICATIONS ===================== -->
+<div id="pgNotifs" class="page">
+  <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <button class="btn btn-glass-custom mb-2" onclick="nav('pgDash')">← Dashboard</button>
+        <h2 class="display-serif" style="font-size:1.9rem;margin:0"><span class="grad">Notifications</span></h2>
+      </div>
+      <button class="btn btn-danger-custom btn-sm" onclick="clearNotifs()">Clear All</button>
+    </div>
+    <div class="d-flex flex-column gap-3" id="notifList"></div>
+  </div>
+</div>
+
+<!-- ===================== 20. PROFILE ===================== -->
+<div id="pgProfile" class="page">
+  <div class="container mt-5">
+    <button class="btn btn-glass-custom mb-4" onclick="nav('pgDash')">← Dashboard</button>
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="glass overflow-hidden mb-4">
+          <div class="prof-banner"></div>
+          <div class="p-4 text-center" style="margin-top:-60px">
+            <div class="avatar avatar-xl mx-auto mb-3" id="profAvLg" style="font-family:var(--font-d)">U</div>
+            <h3 style="font-weight:800;font-size:1.4rem" id="profName">User</h3>
+            <p style="color:var(--text2);font-size:.88rem" id="profEmail">email@example.com</p>
+            <div class="d-flex justify-content-center gap-2 mt-2">
+              <span class="chip active"><span id="profTripStat">0</span> trips</span>
+              <span class="chip active-purple">Pro Member</span>
+              <span class="chip" style="color:var(--gold);border-color:var(--gold);background:rgba(251,191,36,.1)">⭐ Verified</span>
+            </div>
+          </div>
+        </div>
+        <div class="glass p-4">
+          <h6 style="font-weight:700;margin-bottom:.9rem;font-size:.9rem">Edit Profile</h6>
+          <div class="mb-3"><label class="form-label">Full Name</label><input type="text" id="profNameEdit" class="form-control" placeholder="Your name"></div>
+          <div class="mb-3"><label class="form-label">Email (read-only)</label><input type="email" id="profEmailEdit" class="form-control" disabled style="opacity:.55"></div>
+          <div class="mb-3"><label class="form-label">Phone Number</label><input type="tel" id="profPhone" class="form-control" placeholder="+91 98765 43210"></div>
+          <div class="mb-3"><label class="form-label">Travel Preferences</label><input type="text" id="profPrefs" class="form-control" placeholder="Adventure, Nature, Food tours..."></div>
+          <div class="mb-3"><label class="form-label">Home City</label><input type="text" id="profCity" class="form-control" placeholder="New Delhi, India"></div>
+          <div class="mb-4"><label class="form-label">New Password</label><input type="password" class="form-control" placeholder="Leave blank to keep current"></div>
+          <button class="btn btn-primary-custom w-100" onclick="updateProfile()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 21. SETTINGS ===================== -->
+<div id="pgSettings" class="page">
+  <div class="container mt-5">
+    <button class="btn btn-glass-custom mb-4" onclick="nav('pgDash')">← Dashboard</button>
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="glass p-4">
+          <h2 class="display-serif mb-4" style="font-size:1.75rem"><span class="grad">Settings</span></h2>
+          <div class="section-label mb-3">Appearance</div>
+          <div class="setting-row">
+            <div><div style="font-weight:600;font-size:.9rem">Dark Mode</div><div style="color:var(--text2);font-size:.78rem">Switch between dark and light theme</div></div>
+            <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="themeToggle" checked onchange="toggleThemeSetting(this)"></div>
+          </div>
+          <div class="mb-4 mt-2">
+            <label class="form-label">App Language</label>
+            <select class="form-select" id="langSelect" onchange="toast('Language preference saved!','success')">
+              <option>🇬🇧 English (UK)</option><option selected>🇺🇸 English (US)</option>
+              <option>🇮🇳 हिंदी (Hindi)</option><option>🇪🇸 Español</option>
+              <option>🇫🇷 Français</option><option>🇯🇵 日本語</option><option>🇩🇪 Deutsch</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Currency Display</label>
+            <select class="form-select" id="currencyPref" onchange="toast('Currency preference saved!','success')">
+              <option value="USD">🇺🇸 USD ($)</option><option value="EUR">🇪🇺 EUR (€)</option>
+              <option value="GBP">🇬🇧 GBP (£)</option><option value="INR">🇮🇳 INR (₹)</option>
+              <option value="JPY">🇯🇵 JPY (¥)</option><option value="AUD">🇦🇺 AUD ($)</option>
+            </select>
+          </div>
+          <div class="section-label mb-3">Notifications</div>
+          <div class="setting-row"><span style="font-weight:500;font-size:.9rem">Push Notifications</span><div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" checked onchange="toast('Settings saved!','success')"></div></div>
+          <div class="setting-row"><span style="font-weight:500;font-size:.9rem">Email Alerts</span><div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" checked onchange="toast('Settings saved!','success')"></div></div>
+          <div class="setting-row mb-4"><span style="font-weight:500;font-size:.9rem">Weather Alerts</span><div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" checked onchange="toast('Settings saved!','success')"></div></div>
+          <div class="section-label mb-3">Privacy & Security</div>
+          <div class="setting-row"><span style="font-weight:500;font-size:.9rem">Two-Factor Auth</span><div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" onchange="toast('2FA toggled!','info')"></div></div>
+          <div class="setting-row mb-4"><span style="font-weight:500;font-size:.9rem">Data Analytics</span><div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" checked onchange="toast('Settings saved!','success')"></div></div>
+          <div class="section-label mb-3" style="color:var(--accent3)">Danger Zone</div>
+          <button class="btn btn-glass-custom w-100 mb-2" onclick="clearData()">🗑️ Wipe All Local Data</button>
+          <button class="btn btn-danger-custom w-100" onclick="doLogout()">🚪 Secure Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 22. REVIEW ===================== -->
+<div id="pgReview" class="page">
+  <div class="container mt-5">
+    <button class="btn btn-glass-custom mb-4" onclick="nav('pgTrips')">← My Trips</button>
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="glass p-4 p-lg-5">
+          <div class="text-center mb-4">
+            <div class="section-label">✦ Share Your Experience</div>
+            <h2 class="display-serif" style="font-size:2rem"><span class="grad">Rate & Review</span></h2>
+            <p style="color:var(--text2);font-size:.88rem">Help other travelers and improve our AI</p>
+          </div>
+          <div class="text-center mb-4">
+            <div class="d-flex justify-content-center gap-2" id="starRow">
+              <span class="star" onclick="setRating(1)">☆</span><span class="star" onclick="setRating(2)">☆</span>
+              <span class="star" onclick="setRating(3)">☆</span><span class="star" onclick="setRating(4)">☆</span>
+              <span class="star" onclick="setRating(5)">☆</span>
+            </div>
+            <div style="color:var(--text2);font-size:.8rem;margin-top:.35rem" id="starLabel">Tap to rate</div>
+          </div>
+          <div class="mb-3"><label class="form-label">Destination</label>
+            <select class="form-select" id="reviewDest">
+              <option>Mumbai</option><option>Darjeeling</option>
+            </select>
+          </div>
+          <div class="mb-3"><label class="form-label">Review Title</label><input type="text" class="form-control" id="revTitle" placeholder="Best trip of my life!"></div>
+          <div class="mb-3"><label class="form-label">Detailed Feedback</label><textarea class="form-control" id="revBody" rows="4" placeholder="Tell us about accommodation, food, experiences..."></textarea></div>
+          <div class="mb-3"><label class="form-label">Upload Photos</label><input type="file" class="form-control" accept="image/*" multiple></div>
+          <div class="mb-4">
+            <label class="form-label">Category Ratings</label>
+            <div class="row g-2">
+              <div class="col-4"><div style="text-align:center;color:var(--text2);font-size:.75rem;margin-bottom:.25rem">🏨 Hotel</div><input type="range" class="form-range" min="1" max="5" style="accent-color:var(--accent)"></div>
+              <div class="col-4"><div style="text-align:center;color:var(--text2);font-size:.75rem;margin-bottom:.25rem">🍽️ Food</div><input type="range" class="form-range" min="1" max="5" style="accent-color:var(--accent)"></div>
+              <div class="col-4"><div style="text-align:center;color:var(--text2);font-size:.75rem;margin-bottom:.25rem">🎯 Activities</div><input type="range" class="form-range" min="1" max="5" style="accent-color:var(--accent)"></div>
+            </div>
+          </div>
+          <button class="btn btn-primary-custom w-100" style="padding:.85rem" onclick="submitReview()">Submit Review ⭐</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 23. CURRENCY CONVERTER ===================== -->
+<div id="pgCurrency" class="page">
+  <div class="container mt-5">
+    <button class="btn btn-glass-custom mb-4" onclick="nav('pgDash')">← Dashboard</button>
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="text-center mb-4">
+          <div class="section-label">✦ Finance Tool</div>
+          <h2 class="display-serif" style="font-size:2.1rem"><span class="grad">Currency Converter</span></h2>
+          <p style="color:var(--text2);font-size:.88rem">Real-time exchange rates for your travel budget</p>
+        </div>
+        <div class="glass p-4 p-lg-5">
+          <div class="mb-3">
+            <label class="form-label">Amount</label>
+            <input type="number" id="cvrAmt" class="form-control" value="100" min="0.01" step="0.01" oninput="convertCurrency()">
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-6">
+              <label class="form-label">From</label>
+              <select class="form-select" id="cvrFrom" onchange="convertCurrency()">
+                <option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option>
+                <option value="GBP">🇬🇧 GBP</option><option value="INR">🇮🇳 INR</option>
+                <option value="JPY">🇯🇵 JPY</option><option value="AUD">🇦🇺 AUD</option>
+                <option value="CAD">🇨🇦 CAD</option><option value="CHF">🇨🇭 CHF</option>
+                <option value="SGD">🇸🇬 SGD</option><option value="THB">🇹🇭 THB</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">To</label>
+              <select class="form-select" id="cvrTo" onchange="convertCurrency()">
+                <option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option>
+                <option value="GBP">🇬🇧 GBP</option><option value="INR" selected>🇮🇳 INR</option>
+                <option value="JPY">🇯🇵 JPY</option><option value="AUD">🇦🇺 AUD</option>
+                <option value="CAD">🇨🇦 CAD</option><option value="CHF">🇨🇭 CHF</option>
+                <option value="SGD">🇸🇬 SGD</option><option value="THB">🇹🇭 THB</option>
+              </select>
+            </div>
+          </div>
+          <div id="cvrResult" style="background:rgba(94,255,196,.08);border:1px solid var(--accent);border-radius:var(--r);padding:1.25rem;text-align:center;margin-bottom:1rem">
+            <div style="color:var(--text2);font-size:.78rem;margin-bottom:.3rem">Converted Amount</div>
+            <div style="font-family:var(--font-m);font-size:2rem;font-weight:700" class="grad" id="cvrOutput">—</div>
+            <div style="color:var(--text2);font-size:.75rem;margin-top:.3rem" id="cvrRate">Rate: Loading...</div>
+          </div>
+          <div id="cvrGrid" class="row g-2"></div>
+          <p style="color:var(--text2);font-size:.72rem;text-align:center;margin-top:1rem">Rates refreshed every 30 minutes · Indicative only</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ============================================================ CONFIG
+const GEMINI_KEY = ""; // Add your Gemini API key here
+
+// ============================================================ DB
+const DB = {
+  get:(k,d=null)=>{try{const v=localStorage.getItem('ST3_'+k);return v?JSON.parse(v):d}catch{return d}},
+  set:(k,v)=>{try{localStorage.setItem('ST3_'+k,JSON.stringify(v))}catch{}},
+  del:(k)=>localStorage.removeItem('ST3_'+k),
+  clear:()=>Object.keys(localStorage).filter(k=>k.startsWith('ST3_')).forEach(k=>localStorage.removeItem(k))
+};
+
+// ============================================================ STATE
+const S = {
+  user: DB.get('user',null),
+  trips: DB.get('trips',[]),
+  expenses: DB.get('expenses',[]),
+  wishlist: DB.get('wishlist',[]),
+  notifs: DB.get('notifs',[{icon:'👋',title:'Welcome!',desc:'Your AI travel companion is ready. Plan your first trip!',time:'Just now',unread:true}]),
+  moods: [],
+  currentPlan: DB.get('lastPlan',null),
+  currentMap: null,
+  fullMap: null,
+  currentRating: 0,
+  bookingTotal: 0,
+  theme: DB.get('theme','dark'),
+  activeBuddyFilter: 'All',
+};
+
+function saveTrips(){DB.set('trips',S.trips)}
+function saveExp(){DB.set('expenses',S.expenses)}
+function saveWish(){DB.set('wishlist',S.wishlist)}
+function saveNotifs(){DB.set('notifs',S.notifs)}
+
+// Apply saved theme immediately
+document.documentElement.setAttribute('data-theme',S.theme);
+
+// ============================================================ NAVIGATION
+function nav(id){
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none'});
+  const pg=document.getElementById(id);
+  if(!pg){console.warn('Page not found:',id);return}
+  pg.style.display='block';
+  requestAnimationFrame(()=>pg.classList.add('active'));
+  window.scrollTo({top:0,behavior:'smooth'});
+  const triggers={
+    pgDash:updateDash,pgExpense:renderExp,pgTrips:renderTrips,
+    pgWishlist:renderWishlist,pgNotifs:renderNotifs,
+    pgMap:initFullMap,pgProfile:renderProfile,pgBuddies:renderBuddies,
+    pgCurrency:()=>convertCurrency()
+  };
+  if(triggers[id]) setTimeout(triggers[id],50);
+  if(id==='pgItinerary'&&S.currentMap) setTimeout(()=>S.currentMap.invalidateSize(),450);
+}
+
+function reqAuth(pg){
+  if(!S.user){toast('Please login to access this feature','warn');nav('pgSignup');return}
+  nav(pg);
+}
+
+// ============================================================ TOAST
+function toast(msg,type='info'){
+  const icons={success:'✅',error:'❌',info:'ℹ️',warn:'⚠️'};
+  const el=document.createElement('div');
+  el.className=`toast-item toast-${type}`;
+  el.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span style="flex:1">${msg}</span>`;
+  el.onclick=()=>el.remove();
+  document.getElementById('toastStack').appendChild(el);
+  setTimeout(()=>{el.style.cssText+='opacity:0;transform:translateX(38px);transition:all .3s ease';setTimeout(()=>el.remove(),300)},4200);
+}
+
+// ============================================================ AUTH
+function previewPhoto(inp){
+  if(!inp.files||!inp.files[0]) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('previewImg').src=e.target.result;
+    document.getElementById('photoPreview').style.display='block';
+  };
+  reader.readAsDataURL(inp.files[0]);
+}
+
+function doSignup(e){
+  e.preventDefault();
+  const name=document.getElementById('suName').value.trim();
+  const phone=document.getElementById('suPhone').value.trim();
+  const email=document.getElementById('suEmail').value.trim();
+  const pass=document.getElementById('suPass').value;
+  const conf=document.getElementById('suConf').value;
+  if(!name||!email||!phone){toast('All required fields must be filled','error');return}
+  if(pass!==conf){toast('Passwords do not match','error');return}
+  if(pass.length<6){toast('Password must be at least 6 characters','error');return}
+  S.user={name,email,phone,joined:new Date().toLocaleDateString(),avatar:name.charAt(0).toUpperCase()};
+  DB.set('user',S.user);
+  afterLogin();
+  toast(`Welcome aboard, ${name.split(' ')[0]}! 🚀`,'success');
+}
+
+function doLogin(e){
+  e.preventDefault();
+  const email=document.getElementById('liEmail').value.trim();
+  const pass=document.getElementById('liPass').value;
+  if(!email){toast('Email is required','error');return}
+  if(!pass){toast('Password is required','error');return}
+  const displayName=email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  S.user={name:displayName,email,joined:new Date().toLocaleDateString(),avatar:displayName.charAt(0).toUpperCase()};
+  DB.set('user',S.user);
+  afterLogin();
+  toast('Login successful ✈️','success');
+}
+
+function socialLogin(provider){
+  const names={Google:'Google User',Phone:'Phone User'};
+  const n=names[provider]||provider+' User';
+  S.user={name:n,email:`user@${provider.toLowerCase()}.com`,joined:new Date().toLocaleDateString(),avatar:n.charAt(0)};
+  DB.set('user',S.user);
+  afterLogin();
+  toast(`Authenticated via ${provider} ✅`,'success');
+}
+
+function afterLogin(){
+  updateNav();
+  updateDash();
+  pushNotif('🎉','Trip Planning Ready','Your AI travel engine is now active. Start planning!');
+  getDashWeather();
+  nav('pgDash');
+}
+
+function doLogout(){
+  S.user=null;
+  DB.del('user');
+  updateNav();
+  toast('Logged out securely','info');
+  nav('pgHome');
+}
+
+// ============================================================ NAV STATE
+function updateNav(){
+  const g=document.getElementById('navGuest');
+  const u=document.getElementById('navUser');
+  if(S.user){
+    g.style.cssText='display:none!important';
+    u.style.cssText='display:flex!important';
+    document.getElementById('navAv').textContent=S.user.avatar||S.user.name.charAt(0).toUpperCase();
+    const unread=S.notifs.filter(n=>n.unread).length;
+    document.getElementById('navBadge').textContent=unread||'';
+    document.getElementById('navBadge').style.display=unread?'inline':'none';
+  } else {
+    g.style.cssText='display:flex!important';
+    u.style.cssText='display:none!important';
+  }
+}
+
+// ============================================================ THEME
+let _theme=S.theme||'dark';
+function cycleTheme(){
+  _theme=_theme==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',_theme);
+  DB.set('theme',_theme);
+  document.getElementById('themeBtn').textContent=_theme==='dark'?'🌙':'☀️';
+  const tgl=document.getElementById('themeToggle');
+  if(tgl) tgl.checked=_theme==='dark';
+}
+function toggleThemeSetting(el){
+  _theme=el.checked?'dark':'light';
+  document.documentElement.setAttribute('data-theme',_theme);
+  DB.set('theme',_theme);
+  document.getElementById('themeBtn').textContent=_theme==='dark'?'🌙':'☀️';
+  toast(`${_theme==='dark'?'Dark':'Light'} mode activated`,'success');
+}
+
+// ============================================================ AI PANEL
+let aiPanelOpen=false;
+function toggleAI(){aiPanelOpen=!aiPanelOpen;document.getElementById('aiPanel').classList.toggle('open',aiPanelOpen)}
+
+async function sendAIPanel(){
+  const inp=document.getElementById('aiPanelInput');
+  const msg=inp.value.trim();
+  if(!msg) return;
+  inp.value='';
+  const box=document.getElementById('aiPanelMsgs');
+  box.innerHTML+=`<div class="msg msg-user" style="align-self:flex-end;background:linear-gradient(135deg,var(--accent),#00d4a0);color:#041020;border-radius:14px;padding:.7rem 1rem;max-width:85%;font-size:.85rem;margin-bottom:.2rem">${msg}</div>`;
+  box.scrollTop=box.scrollHeight;
+  const thinkEl=document.createElement('div');
+  thinkEl.className='msg msg-bot';
+  thinkEl.style.cssText='align-self:flex-start;font-size:.85rem;opacity:.6';
+  thinkEl.textContent='🤖 Thinking...';
+  box.appendChild(thinkEl);
+  box.scrollTop=box.scrollHeight;
+  const resp=await getAITravelAnswer(msg);
+  thinkEl.remove();
+  box.innerHTML+=`<div class="msg msg-bot" style="font-size:.85rem">${resp}</div>`;
+  box.scrollTop=box.scrollHeight;
+}
+
+async function getAITravelAnswer(q){
+  if(!GEMINI_KEY){
+    // Smart local responses
+    const ql=q.toLowerCase();
+    if(ql.includes('visa')) return '🛂 Visa requirements vary by nationality and destination. I recommend checking the official embassy website or a trusted visa service like IATA Travel Centre for accurate, up-to-date information.';
+    if(ql.includes('budget')&&ql.includes('bali')) return '💰 Bali is quite affordable! Budget travelers can get by on $30–50/day, mid-range $80–120/day, and luxury $200+/day. Accommodation ranges from $10 (hostel) to $300+ (resort).';
+    if(ql.includes('best time')||ql.includes('when to visit')) return '📅 The best time to visit depends on the destination. Generally: SE Asia (Nov–Mar), Europe (May–Sep), Japan (Mar–May or Oct–Nov). Use the AI Planner for specific destination advice!';
+    if(ql.includes('flight')||ql.includes('cheap')) return '✈️ For cheap flights, book 6–8 weeks in advance, fly midweek (Tue/Wed), use Google Flights fare alerts, and consider budget airlines. Incognito mode while searching can sometimes show lower prices.';
+    if(ql.includes('pack')||ql.includes('luggage')) return '🧳 Packing tips: Roll clothes to save space, pack a universal adapter, bring a portable charger, keep meds in carry-on, and always have a physical copy of important documents.';
+    if(ql.includes('safe')||ql.includes('safety')) return '🔒 Travel safety tips: Register with your embassy, share itinerary with family, keep digital copies of docs, use hotel safes, be aware of common tourist scams, and get travel insurance!';
+    if(ql.includes('insurance')) return '🏥 Travel insurance is highly recommended! Look for plans covering: medical emergencies, trip cancellation, lost luggage, and flight delays. Compare at InsureMyTrip or World Nomads.';
+    return `🌍 Great question about "${q}"! As your AI travel assistant, I can help with destination advice, budgeting, packing tips, visas, safety info, and more. For AI-generated itineraries, try the Trip Planner! Want me to be more specific about anything?`;
+  }
+  try {
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_KEY}`;
+    const body={contents:[{parts:[{text:`You are a concise, friendly AI travel assistant for SmartTrip AI. Answer this travel question in 2-4 sentences with practical advice and emojis. Question: ${q}`}]}]};
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    return d.candidates?.[0]?.content?.parts?.[0]?.text||'I can help with that! Please use the Trip Planner for full itinerary generation.';
+  } catch(e){
+    return '🌍 I can help with travel tips! Use the Trip Planner for full AI itinerary generation.';
+  }
+}
+
+// ============================================================ DASHBOARD
+function updateDash(){
+  if(!S.user) return;
+  document.getElementById('dashName').textContent=S.user.name.split(' ')[0];
+  document.getElementById('dsTripCount').textContent=S.trips.length;
+  document.getElementById('dashTripCount2').textContent=S.trips.length;
+  const spent=S.expenses.reduce((s,e)=>s+e.amt,0);
+  document.getElementById('dsExpAmt').textContent='$'+spent.toLocaleString();
+  document.getElementById('dsWishCount').textContent=S.wishlist.length;
+  document.getElementById('dsAlerts').textContent=S.notifs.filter(n=>n.unread).length||S.notifs.length;
+  renderDashBuddies();
+  renderDashNotifPreview();
+  renderSpendingAnalytics();
+  // Populate trip tags in expense form
+  const tripSel=document.getElementById('exTrip');
+  if(tripSel){
+    tripSel.innerHTML='<option value="">No trip</option>'+S.trips.map(t=>`<option>${t.dest}</option>`).join('');
+  }
+}
+
+function renderDashBuddies(){
+  const el=document.getElementById('dashBuddies');
+  if(!el) return;
+  el.innerHTML=BUDDIES.slice(0,3).map((b,i)=>`
+    <div class="col-4 text-center cursor" onclick="viewBuddy(${i})">
+      <img src="${b.img}" class="rounded-circle mb-1" style="width:56px;height:56px;object-fit:cover;border:2px solid var(--accent)">
+      <div style="font-size:.77rem;font-weight:600;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name.split(' ')[0]}</div>
+      <div style="font-size:.7rem;color:var(--accent)">${b.match}%</div>
+    </div>
+  `).join('');
+}
+
+function renderDashNotifPreview(){
+  const el=document.getElementById('dashNotifPreview');
+  if(!el) return;
+  if(!S.notifs.length){el.innerHTML='<div style="color:var(--text2);font-size:.83rem;text-align:center;padding:.9rem">All caught up! 🎉</div>';return}
+  el.innerHTML=S.notifs.slice(0,4).map(n=>`
+    <div class="notif-item ${n.unread?'unread':''}" style="padding:.75rem .9rem">
+      <span class="notif-icon" style="font-size:1.2rem">${n.icon}</span>
+      <div style="min-width:0"><div style="font-weight:600;font-size:.8rem;margin-bottom:.1rem">${n.title}</div>
+      <div style="color:var(--text2);font-size:.74rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.desc}</div></div>
+    </div>
+  `).join('');
+}
+
+function renderSpendingAnalytics(){
+  const sec=document.getElementById('analyticsSection');
+  if(!S.expenses.length){if(sec)sec.style.display='none';return}
+  if(sec) sec.style.display='';
+  const cats={Food:0,Transport:0,Hotel:0,Shopping:0,Activities:0,Misc:0};
+  S.expenses.forEach(e=>cats[e.cat]=(cats[e.cat]||0)+e.amt);
+  const entries=Object.entries(cats).filter(([,v])=>v>0);
+  if(!entries.length) return;
+  const max=Math.max(...entries.map(([,v])=>v));
+  const chart=document.getElementById('spendingChart');
+  const labels=document.getElementById('chartLabels');
+  if(!chart||!labels) return;
+  const colors=['var(--gold)','var(--accent)','var(--pink)','var(--accent2)','#00e5a0','var(--text2)'];
+  chart.innerHTML=entries.map(([cat,val],i)=>{
+    const h=Math.round((val/max)*110);
+    return `<div class="bar-col" style="height:${h}px;background:${colors[i%colors.length]};opacity:.85" title="${cat}: $${val.toFixed(0)}"></div>`;
+  }).join('');
+  labels.innerHTML=entries.map(([cat,val],i)=>`
+    <div class="bar-label" style="flex:1;min-width:35px;color:${colors[i%colors.length]}">${CAT_ICONS[cat]||'📦'}<br>$${val.toFixed(0)}</div>
+  `).join('');
+}
+
+// ============================================================ WEATHER
+async function getDashWeather(){
+  if(!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    try {
+      const {latitude:lat,longitude:lon}=pos.coords;
+      const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+      const d=await r.json();
+      const w=d.current_weather;
+      const wc=w.weathercode;
+      const icon=wc<=1?'☀️':wc<=3?'⛅':wc<=48?'🌫️':wc<=67?'🌧️':wc<=77?'❄️':'⛈️';
+      const desc=wc<=1?'Clear sky':wc<=3?'Partly cloudy':wc<=48?'Foggy':wc<=67?'Rainy':wc<=77?'Snowy':'Stormy';
+      const dw=document.getElementById('dashWeather');
+      const dwi=document.getElementById('dashWeatherInfo');
+      const dwico=document.getElementById('dashWeatherIcon');
+      if(dw){dw.style.display='block'}
+      if(dwi){dwi.textContent=`${w.temperature}°C · ${desc} · Wind ${w.windspeed} km/h`}
+      if(dwico){dwico.textContent=icon}
+    } catch(err){}
+  },()=>{});
+}
+
+// ============================================================ HOME
+const FEATURED_DESTS=[
+  {name:'Kyoto, Japan',tag:'Cultural Magic',img:'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600&q=80'},
+  {name:'Santorini, Greece',tag:'Romantic Bliss',img:'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&q=80'},
+  {name:'Bali, Indonesia',tag:'Nature & Wellness',img:'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80'},
+  {name:'Swiss Alps',tag:'Alpine Adventure',img:'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=600&q=80'},
+  {name:'Maldives',tag:'Luxury Paradise',img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80'},
+  {name:'Paris, France',tag:'Art & Romance',img:'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80'},
+  {name:'New York, USA',tag:'Urban Pulse',img:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600&q=80'},
+  {name:'Dubai, UAE',tag:'Luxury & Modernity',img:'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=80'},
+];
+
+function buildHome(){
+  const el=document.getElementById('featuredDests');
+  if(el) el.innerHTML=FEATURED_DESTS.map(d=>`
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="dest-card" onclick="quickDest('${d.name}')">
+        <img src="${d.img}" loading="lazy" alt="${d.name}">
+        <div class="dest-card-overlay">
+          <div style="color:rgba(255,255,255,.55);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.15rem">${d.tag}</div>
+          <h5 style="font-weight:700;margin:0;font-size:.9rem">${d.name}</h5>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  const fg=document.getElementById('featureGrid');
+  if(fg) fg.innerHTML=[
+    {icon:'🤖',title:'Gemini AI Plans',desc:'Full itineraries in seconds with precise day-wise scheduling for any duration.'},
+    {icon:'🌤️',title:'Live Weather',desc:'Real-time temperatures and forecasts via Open-Meteo — always accurate.'},
+    {icon:'🗺️',title:'Interactive Maps',desc:'Route visualization with Leaflet & OpenStreetMap for any destination.'},
+    {icon:'👥',title:'Buddy Matching',desc:'Connect with compatible travelers heading to the same destination.'},
+    {icon:'💰',title:'Smart Budgeting',desc:'Expense tracking with category analytics and CSV export.'},
+    {icon:'💱',title:'Currency Converter',desc:'Real-time exchange rates for 50+ currencies to plan your budget.'},
+  ].map(f=>`
+    <div class="col-md-4">
+      <div class="glass p-4 h-100">
+        <div style="font-size:1.85rem;margin-bottom:.65rem">${f.icon}</div>
+        <h5 style="font-weight:700;margin-bottom:.35rem;font-size:.95rem">${f.title}</h5>
+        <p style="color:var(--text2);font-size:.84rem;margin:0;line-height:1.65">${f.desc}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+function quickDest(name){
+  if(!S.user){reqAuth('pgPlan');return}
+  document.getElementById('planDest').value=name;
+  // Calculate sensible defaults
+  const days=document.getElementById('homeDays')?.value||'5';
+  document.getElementById('planDays').value=days;
+  nav('pgMood');
+}
+
+function homeQuickPlan(){
+  const dest=document.getElementById('homeDest')?.value?.trim();
+  if(!dest){toast('Enter a destination first!','warn');return}
+  if(!S.user){reqAuth('pgPlan');return}
+  document.getElementById('planDest').value=dest;
+  document.getElementById('planDays').value=document.getElementById('homeDays').value;
+  document.getElementById('planBudget').value=document.getElementById('homeBudget').value;
+  document.getElementById('budgetDisp').textContent=document.getElementById('homeBudget').value;
+  nav('pgMood');
+}
+
+// ============================================================ PLAN → MOOD
+function proceedToMood(){
+  const dest=document.getElementById('planDest')?.value?.trim();
+  const days=parseInt(document.getElementById('planDays')?.value);
+  if(!dest){toast('Please enter a destination','error');return}
+  if(!days||days<1||days>30){toast('Duration must be between 1 and 30 days','error');return}
+  const dateEl=document.getElementById('planDate');
+  if(!dateEl.value){toast('Please select a start date','error');return}
+  nav('pgMood');
+}
+
+// ============================================================ MOOD
+const MOODS=[
+  {id:'Peaceful',icon:'🧘',label:'Peaceful'},{id:'Adventure',icon:'⛰️',label:'Adventure'},
+  {id:'Nature',icon:'🌿',label:'Nature'},{id:'Party',icon:'🎉',label:'Party'},
+  {id:'Romantic',icon:'💑',label:'Romantic'},{id:'Spiritual',icon:'🛕',label:'Spiritual'},
+  {id:'Cultural',icon:'🏛️',label:'Cultural'},{id:'Gastronomic',icon:'🍜',label:'Foodie'},
+  {id:'Beach',icon:'🏖️',label:'Beach'},{id:'Shopping',icon:'🛍️',label:'Shopping'},
+  {id:'Backpacker',icon:'🎒',label:'Backpacker'},{id:'Luxury',icon:'👑',label:'Luxury'},
+];
+
+function buildMoodGrid(){
+  const el=document.getElementById('moodGrid');
+  if(!el) return;
+  el.innerHTML=MOODS.map(m=>`
+    <div class="col-4 col-md-3">
+      <div class="glass mood-card glass-sm" id="mood_${m.id}" onclick="toggleMood('${m.id}',this)">
+        <span class="mood-icon">${m.icon}</span>
+        <div class="mood-label">${m.label}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleMood(id,el){
+  if(S.moods.includes(id)){S.moods=S.moods.filter(m=>m!==id);el.classList.remove('selected')}
+  else{S.moods.push(id);el.classList.add('selected')}
+}
+
+// ============================================================ AI ENGINE
+const AI_MSGS=[
+  'Analyzing destination parameters...','Querying travel databases...',
+  'Generating day-wise schedule...','Computing budget breakdowns...',
+  'Mapping routes & coordinates...','Checking weather patterns...',
+  'Curating local experiences...','Finalizing your personalized plan...',
+];
+
+let _aiMsgInterval=null;
+let _aiProgress=0;
+let _aiProgressInterval=null;
+
+async function startAI(){
+  const dest=document.getElementById('planDest')?.value?.trim();
+  if(!dest){toast('Set a destination first!','error');nav('pgPlan');return}
+
+  nav('pgAI');
+  document.getElementById('aiLoad').style.display='block';
+  document.getElementById('aiResult').style.display='none';
+  document.getElementById('aiLoadDest').textContent=dest;
+
+  let msgIdx=0;
+  const msgEl=document.getElementById('aiLoadMsg');
+  _aiMsgInterval=setInterval(()=>{msgEl.textContent=AI_MSGS[msgIdx++%AI_MSGS.length]},1600);
+
+  _aiProgress=0;
+  _aiProgressInterval=setInterval(()=>{
+    _aiProgress=Math.min(90,_aiProgress+Math.random()*8);
+    const bar=document.getElementById('aiProgressBar');
+    if(bar) bar.style.width=_aiProgress+'%';
+  },400);
+
+  const budget=document.getElementById('planBudget')?.value||'5000';
+  const days=parseInt(document.getElementById('planDays')?.value||'5');
+  const comp=document.getElementById('planComp')?.value||'Solo';
+  const count=document.getElementById('planCount')?.value||'1';
+  const accom=document.getElementById('planAccom')?.value||'Premium Hotel (4★)';
+  const notes=document.getElementById('planNotes')?.value||'';
+  const moods=S.moods.length?S.moods.join(', '):'General';
+  const startDate=document.getElementById('planDate')?.value||new Date().toISOString().split('T')[0];
+
+  const prompt=`You are an expert AI travel planner. Create a detailed, realistic travel plan for:
+- Destination: ${dest}
+- Budget: $${budget} USD total for ALL travelers
+- Duration: EXACTLY ${days} days (critical - generate exactly ${days} days)
+- Start Date: ${startDate}
+- Companions: ${comp} (${count} travelers)
+- Accommodation: ${accom}
+- Trip vibes: ${moods}
+- Special notes: ${notes||'None'}
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "destinationName": "Full formal name",
+  "latitude": <number>,
+  "longitude": <number>,
+  "estimatedCost": "$X,XXX - $Y,XXX",
+  "bestSeason": "Month range (e.g., March–May & Oct–Nov)",
+  "description": "2 vivid sentences about this destination and why it matches the selected vibes",
+  "tips": ["Specific actionable tip 1","Specific actionable tip 2","Local cultural tip 3","Money-saving tip 4","Safety/logistics tip 5"],
+  "budgetBreakdown": [
+    {"category":"Accommodation","amount":"$X","pct":35},
+    {"category":"Transport","amount":"$Y","pct":25},
+    {"category":"Food & Dining","amount":"$Z","pct":20},
+    {"category":"Activities","amount":"$A","pct":12},
+    {"category":"Shopping & Misc","amount":"$B","pct":8}
+  ],
+  "itinerary": [<exactly ${days} objects: {"day":N,"title":"Day title","activities":["Activity 1 with detail","Activity 2","Activity 3","Activity 4"],"accommodation":"Specific hotel/area name","foodHighlight":"Specific restaurant or dish recommendation","transportNote":"How to get around this day"}>],
+  "hotels": [
+    {"name":"Realistic hotel name","price":<integer>,"rating":"5★","location":"Specific neighborhood"},
+    {"name":"Realistic budget hotel name","price":<integer>,"rating":"4★","location":"Specific neighborhood"},
+    {"name":"Budget option","price":<integer>,"rating":"3★","location":"Area name"}
+  ],
+  "flights": [
+    {"name":"Premium airline route","price":<integer>,"type":"Non-Stop","duration":"X hrs","airline":"Airline name"},
+    {"name":"Economy option","price":<integer>,"type":"1 Stop","duration":"X+Y hrs","airline":"Budget airline"}
+  ],
+  "activities": [
+    {"name":"Activity 1","price":<integer>,"duration":"3 hours","category":"Culture","description":"Brief description"},
+    {"name":"Activity 2","price":<integer>,"duration":"Full day","category":"Adventure","description":"Brief description"},
+    {"name":"Activity 3","price":<integer>,"duration":"2 hours","category":"Food","description":"Brief description"}
+  ]
+}`;
+
+  try {
+    const plan=await callGemini(prompt,days);
+    clearInterval(_aiMsgInterval);
+    clearInterval(_aiProgressInterval);
+    const bar=document.getElementById('aiProgressBar');
+    if(bar) bar.style.width='100%';
+    S.currentPlan=plan;
+    DB.set('lastPlan',plan);
+    await renderAIResult(plan,days);
+    document.getElementById('aiLoad').style.display='none';
+    document.getElementById('aiResult').style.display='block';
+    toast(`AI plan for ${plan.destinationName} is ready! ✨`,'success');
+    pushNotif('🤖','AI Plan Ready',`Your ${days}-day itinerary for ${plan.destinationName} is ready to view!`);
+  } catch(err){
+    clearInterval(_aiMsgInterval);
+    clearInterval(_aiProgressInterval);
+    console.error('AI Error:',err);
+    toast('Generation encountered an error. Using smart fallback.','warn');
+    // Try mock plan as fallback
+    const mockPlan=generateMockPlan(days);
+    S.currentPlan=mockPlan;
+    DB.set('lastPlan',mockPlan);
+    await renderAIResult(mockPlan,days);
+    document.getElementById('aiLoad').style.display='none';
+    document.getElementById('aiResult').style.display='block';
+  }
+}
+
+async function callGemini(prompt,days){
+  if(!GEMINI_KEY){
+    await new Promise(r=>setTimeout(r,2800));
+    return generateMockPlan(days);
+  }
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_KEY}`;
+  const body={contents:[{parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',temperature:0.7}};
+  for(let i=0;i<3;i++){
+    try {
+      const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error(`HTTP ${r.status}: ${await r.text()}`);
+      const data=await r.json();
+      const txt=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+      const clean=txt.replace(/```json/gi,'').replace(/```/g,'').trim();
+      const parsed=JSON.parse(clean);
+      // Validate itinerary count matches requested days
+      if(parsed.itinerary&&parsed.itinerary.length!==days){
+        // Pad or trim to exact days
+        while(parsed.itinerary.length<days){
+          const d=parsed.itinerary.length+1;
+          parsed.itinerary.push({day:d,title:`Day ${d} – Exploration`,activities:['Morning sightseeing','Lunch at local restaurant','Afternoon cultural visit','Evening leisure'],accommodation:'Current hotel',foodHighlight:'Local specialty',transportNote:'Walk or local transport'});
+        }
+        if(parsed.itinerary.length>days) parsed.itinerary=parsed.itinerary.slice(0,days);
+      }
+      return parsed;
+    } catch(e){
+      if(i===2) throw e;
+      await new Promise(r=>setTimeout(r,1800*(i+1)));
+    }
+  }
+}
+
+// ============================================================ MOCK PLAN GENERATOR (comprehensive)
+function generateMockPlan(days){
+  const dest=document.getElementById('planDest')?.value||'Paris, France';
+  const budget=parseFloat(document.getElementById('planBudget')?.value||'5000');
+  days=days||parseInt(document.getElementById('planDays')?.value)||5;
+
+  const coordMap={
+    japan:[35.6762,139.6503],kyoto:[35.0116,135.7681],tokyo:[35.6762,139.6503],
+    paris:[48.8566,2.3522],france:[48.8566,2.3522],
+    bali:[8.3405,115.0920],indonesia:[-8.4095,115.1889],
+    switzerland:[46.8182,8.2275],swiss:[46.8182,8.2275],
+    greece:[37.9838,23.7275],santorini:[36.3932,25.4615],
+    maldives:[3.2028,73.2207],'new york':[40.7128,-74.0060],
+    london:[51.5074,-0.1278],dubai:[25.2048,55.2708],
+    bangkok:[13.7563,100.5018],singapore:[1.3521,103.8198],
+    'cape town':[-33.9249,18.4241],rome:[41.9028,12.4964],
+    barcelona:[41.3851,2.1734],amsterdam:[52.3676,4.9041],
+    prague:[50.0755,14.4378],istanbul:[41.0082,28.9784],
+    mumbai:[19.0760,72.8777],delhi:[28.7041,77.1025],
+    jaipur:[26.9124,75.7873],goa:[15.2993,74.1240],
+    manali:[32.2432,77.1892],ladakh:[34.1526,77.5771],
+    kerala:[10.8505,76.2711],darjeeling:[27.0410,88.2663],
+  };
+
+  let lat=48.8566,lon=2.3522;
+  const dLow=dest.toLowerCase();
+  for(const [k,v] of Object.entries(coordMap)){if(dLow.includes(k)){lat=v[0];lon=v[1];break}}
+
+  const destBase=dest.split(',')[0].trim();
+  const moods=S.moods.length?S.moods:[`General`];
+
+  // Generate exactly 'days' itinerary entries
+  const dayTemplates=[
+    {title:'Arrival & First Impressions',activities:[`Check-in at hotel in central ${destBase}`,`Freshen up and take a leisurely walk in the neighborhood`,'Visit a nearby iconic landmark for first views','Welcome dinner at a highly-rated local restaurant','Evening stroll and first night immersion'],foodHighlight:`Traditional welcome dinner at a highly-rated local restaurant`,transportNote:'Airport transfer via private cab or metro'},
+    {title:'City Exploration & Culture',activities:[`Guided tour of ${destBase}'s most iconic attractions`,'Explore the historic old town district on foot','Visit the main museum or cultural heritage site','Street food lunch at the famous local market','Rooftop bar for golden hour views'],foodHighlight:`Street food lunch at the famous ${destBase} market`,transportNote:'Walking tour with short taxi rides'},
+    {title:'Local Experiences & Hidden Gems',activities:[`Morning visit to a lesser-known gem in ${destBase}`,'Local cooking class or culinary workshop','Afternoon at a cultural or arts center','Traditional craft shopping at local artisan market','Authentic dinner at a family-run restaurant'],foodHighlight:'Traditional cuisine at an authentic family restaurant',transportNote:'Bicycle rental or local bus'},
+    {title:'Day Trip & Nature',activities:[`Early morning day trip to a nearby scenic location`,'Guided hike or nature walk with breathtaking views','Picnic lunch with local produce from morning market','Explore a village or natural landmark','Return for a relaxed evening spa or rooftop dinner'],foodHighlight:'Picnic with freshly bought local produce',transportNote:'Chartered van or organized day tour'},
+    {title:'Adventure & Recreation',activities:[`Adrenaline activity: Hiking/Water sports/Cycling based on destination`,`Explore ${destBase}'s adventure zones`,'Afternoon leisurely activity or wellness session','Late afternoon cultural performance or show','Fine dining dinner experience'],foodHighlight:'Fine dining experience with local wine pairing',transportNote:'Tour vehicle included in activity package'},
+    {title:'Shopping & Leisure',activities:[`Morning shopping at ${destBase}'s best markets and boutiques`,'Visit a specialty café for the best local coffee or tea','Explore the neighborhood districts at leisure','Late afternoon spa or pool time','Farewell dinner at a restaurant with city views'],foodHighlight:`Farewell dinner at a rooftop restaurant with ${destBase} views`,transportNote:'Walking and local taxis'},
+    {title:'Spiritual & Wellness',activities:[`Early morning meditation or yoga session`,'Visit to sacred temples, churches, or spiritual sites','Wellness treatment or traditional massage','Healthy lunch at an organic/farm-to-table café','Serene evening walk along nature trails'],foodHighlight:'Organic lunch at a wellness café',transportNote:'Walking and electric scooter'},
+  ];
+
+  const itinerary=Array.from({length:days},(_, i)=>{
+    const tmpl=dayTemplates[i%dayTemplates.length];
+    let title=tmpl.title;
+    if(i===0) title='Arrival & Welcome to '+destBase;
+    if(i===days-1) title='Final Day & Departure';
+    return {
+      day:i+1,title,
+      activities:i===days-1?[`Leisurely breakfast at hotel`,`Last-minute souvenir shopping at ${destBase} central`,`Visit any missed must-see spots`,`Hotel checkout and transfer to airport`]:tmpl.activities,
+      accommodation:i===days-1?'N/A – Departure day':'Premium city hotel near major attractions',
+      foodHighlight:i===days-1?'Quick airport-side meal or café breakfast':tmpl.foodHighlight,
+      transportNote:i===0?'Airport pickup via hotel car or metro':i===days-1?'Hotel checkout & airport transfer':tmpl.transportNote,
+    };
+  });
+
+  return {
+    destinationName:dest,latitude:lat,longitude:lon,
+    estimatedCost:`$${Math.round(budget*.78).toLocaleString()} – $${budget.toLocaleString()}`,
+    bestSeason:'Spring (Mar–May) & Autumn (Sep–Nov)',
+    description:`${dest} is a captivating destination blending ${moods.join(' and ').toLowerCase()} experiences with authentic local culture. Your AI-crafted ${days}-day itinerary maximizes every moment while staying within your budget of $${budget.toLocaleString()}.`,
+    tips:[
+      `Book tickets for major attractions online at least 3–5 days in advance to avoid queues.`,
+      `Use local public transport — significantly cheaper than taxis and offers authentic experiences.`,
+      `Carry local currency for street food, tips, and smaller vendors who don't accept cards.`,
+      `Download Google Maps offline for ${destBase} before your trip to navigate without data.`,
+      `Learn 5–10 key phrases in the local language — locals greatly appreciate the effort.`,
+    ],
+    budgetBreakdown:[
+      {category:'Accommodation',amount:`$${Math.round(budget*.36)}`,pct:36},
+      {category:'Transport',amount:`$${Math.round(budget*.24)}`,pct:24},
+      {category:'Food & Dining',amount:`$${Math.round(budget*.20)}`,pct:20},
+      {category:'Activities',amount:`$${Math.round(budget*.13)}`,pct:13},
+      {category:'Shopping & Misc',amount:`$${Math.round(budget*.07)}`,pct:7},
+    ],
+    itinerary,
+    hotels:[
+      {name:`The Grand ${destBase} Palace Hotel`,price:Math.round(budget*.32),rating:'5★',location:'City Centre'},
+      {name:`${destBase} Premium Suites`,price:Math.round(budget*.22),rating:'4★',location:'Midtown District'},
+      {name:`${destBase} Budget Inn`,price:Math.round(budget*.12),rating:'3★',location:'Old Town'},
+    ],
+    flights:[
+      {name:`Direct Premium Flight to ${destBase}`,price:Math.round(budget*.22),type:'Non-Stop',duration:'~8 hrs',airline:'Premium Carrier'},
+      {name:`Economy Flight to ${destBase}`,price:Math.round(budget*.13),type:'1 Stop',duration:'~12 hrs',airline:'Budget Airline'},
+    ],
+    activities:[
+      {name:`${destBase} Heritage City Tour`,price:Math.round(budget*.05),duration:'4 hours',category:'Culture',description:'Guided walking tour of major landmarks'},
+      {name:'Local Food & Market Walk',price:Math.round(budget*.03),duration:'2 hours',category:'Food',description:'Street food and market exploration'},
+      {name:'Sunset Boat/Cable Car Tour',price:Math.round(budget*.04),duration:'3 hours',category:'Adventure',description:'Scenic views and photo opportunities'},
+    ],
+  };
+}
+
+// ============================================================ RENDER AI RESULT
+async function renderAIResult(plan,days){
+  document.getElementById('resName').textContent=plan.destinationName;
+  document.getElementById('resDesc').textContent=plan.description;
+  document.getElementById('resCost').textContent=plan.estimatedCost;
+  document.getElementById('resSeason').textContent=plan.bestSeason;
+  document.getElementById('resDuration').textContent=`${days} Days`;
+
+  // Hero image — use destination-specific Unsplash
+  const destq=plan.destinationName.split(',')[0].toLowerCase().replace(/\s+/g,'+');
+  document.getElementById('resHeroImg').src=`https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1400&q=80`;
+
+  document.getElementById('resTips').innerHTML=(plan.tips||[]).map(t=>`
+    <li style="display:flex;gap:.65rem;align-items:flex-start">
+      <span style="color:var(--accent);flex-shrink:0;margin-top:.15rem">✦</span>
+      <span style="color:var(--text2);font-size:.87rem;line-height:1.6">${t}</span>
+    </li>
+  `).join('');
+
+  document.getElementById('resBudget').innerHTML=(plan.budgetBreakdown||[]).map(b=>`
+    <div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+        <span style="font-size:.87rem">${b.category}</span>
+        <span style="font-family:var(--font-m);font-weight:700;color:var(--accent);font-size:.87rem">${b.amount}</span>
+      </div>
+      <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${b.pct}%"></div></div>
+    </div>
+  `).join('');
+
+  // Itinerary timeline
+  const itinDays=plan.itinerary||[];
+  document.getElementById('itinDayCount').textContent=itinDays.length;
+  document.getElementById('itineraryList').innerHTML=itinDays.map(d=>`
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="glass p-4 glass-sm">
+        <div class="timeline-day">Day ${d.day} of ${itinDays.length}</div>
+        <h5 style="font-weight:700;margin-bottom:.65rem;font-size:1rem">${d.title}</h5>
+        <ul style="list-style:none;padding:0;margin:0 0 .9rem;display:flex;flex-direction:column;gap:.35rem">
+          ${(d.activities||[]).map(a=>`<li style="color:var(--text2);font-size:.85rem;display:flex;gap:.4rem;align-items:flex-start"><span style="color:var(--accent);flex-shrink:0">›</span>${a}</li>`).join('')}
+        </ul>
+        <div class="row g-2">
+          <div class="col-sm-4"><div style="background:var(--surf2);border-radius:9px;padding:.5rem .75rem"><div style="color:var(--text2);font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.15rem">🏨 Stay</div><div style="font-weight:600;font-size:.78rem">${d.accommodation||'City Hotel'}</div></div></div>
+          <div class="col-sm-4"><div style="background:var(--surf2);border-radius:9px;padding:.5rem .75rem"><div style="color:var(--text2);font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.15rem">🍽️ Eat</div><div style="font-weight:600;font-size:.78rem">${d.foodHighlight||'Local cuisine'}</div></div></div>
+          <div class="col-sm-4"><div style="background:var(--surf2);border-radius:9px;padding:.5rem .75rem"><div style="color:var(--text2);font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.15rem">🚍 Move</div><div style="font-weight:600;font-size:.78rem">${d.transportNote||'Local transport'}</div></div></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Map
+  setTimeout(()=>initItinMap(plan.latitude,plan.longitude,plan.destinationName),300);
+
+  // Live weather
+  try {
+    const wr=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${plan.latitude}&longitude=${plan.longitude}&current_weather=true`);
+    const wd=await wr.json();
+    const w=wd.current_weather;
+    const wc=w.weathercode;
+    const icon=wc<=1?'☀️':wc<=3?'⛅':wc<=48?'🌫️':wc<=67?'🌧️':'⛈️';
+    document.getElementById('resWeather').textContent=`${icon} ${w.temperature}°C`;
+  } catch(e){document.getElementById('resWeather').textContent='~24°C'}
+}
+
+// ============================================================ MAPS
+function mkIcon(color='var(--accent)'){
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:15px;height:15px;border-radius:50%;background:${color};border:2.5px solid #fff;box-shadow:0 0 10px ${color}"></div>`,
+    iconSize:[15,15],iconAnchor:[7.5,7.5]
+  });
+}
+
+function initItinMap(lat,lon,title){
+  const el=document.getElementById('itinMap');
+  if(!el) return;
+  if(S.currentMap){try{S.currentMap.remove()}catch(e){} S.currentMap=null}
+  S.currentMap=L.map('itinMap',{zoomControl:true}).setView([lat,lon],11);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CARTO'}).addTo(S.currentMap);
+  L.marker([lat,lon],{icon:mkIcon()}).addTo(S.currentMap).bindPopup(`<b>📍 ${title}</b>`).openPopup();
+  setTimeout(()=>{if(S.currentMap) S.currentMap.invalidateSize()},500);
+}
+
+function initFullMap(){
+  setTimeout(()=>{
+    const el=document.getElementById('fullMap');
+    if(!el) return;
+    if(!S.fullMap){
+      S.fullMap=L.map('fullMap',{zoomControl:true}).setView([20,0],2);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CARTO'}).addTo(S.fullMap);
+      S.fullMap.on('click',e=>{
+        L.popup().setLatLng(e.latlng).setContent(`📍 ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}<br><small>Click to add waypoint</small>`).openOn(S.fullMap);
+      });
+    }
+    S.fullMap.invalidateSize();
+    if(S.currentPlan){
+      S.fullMap.setView([S.currentPlan.latitude,S.currentPlan.longitude],10);
+      L.marker([S.currentPlan.latitude,S.currentPlan.longitude],{icon:mkIcon()})
+        .addTo(S.fullMap).bindPopup(`<b>📍 ${S.currentPlan.destinationName}</b>`).openPopup();
+    }
+    // Add some demo markers around the world
+    const worldDests=[[35.0116,135.7681,'Kyoto'],[48.8566,2.3522,'Paris'],[-8.3405,115.0920,'Bali'],[25.2048,55.2708,'Dubai'],[40.7128,-74.0060,'New York']];
+    worldDests.forEach(([lt,ln,name])=>{
+      L.marker([lt,ln],{icon:mkIcon('var(--accent2)')}).addTo(S.fullMap).bindPopup(`🌍 ${name}`);
+    });
+  },300);
+}
+
+function locateMe(){
+  if(!navigator.geolocation){toast('Geolocation not supported','error');return}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const{latitude:lat,longitude:lon}=pos.coords;
+    if(S.fullMap){
+      S.fullMap.setView([lat,lon],13);
+      L.marker([lat,lon],{icon:mkIcon('var(--pink)')}).addTo(S.fullMap).bindPopup('📍 You are here').openPopup();
+    }
+    toast('Your location found! 📍','success');
+  },()=>toast('Could not access location','error'));
+}
+
+function mapSearch(){
+  const place=prompt('Search for a place:');
+  if(!place) return;
+  toast(`Searching for: ${place}...`,'info');
+  // In production, this would use Geocoding API
+  setTimeout(()=>toast('Use the Trip Planner for destination maps','info'),1500);
+}
+
+function toggleMapLayer(layer){
+  const names={hotels:'Hotels',restaurants:'Restaurants',attractions:'Attractions'};
+  toast(`${names[layer]} layer toggled on map!`,'success');
+}
+
+// ============================================================ BOOKING
+function setupBooking(){
+  if(!S.currentPlan){toast('Generate an AI plan first','error');return}
+  const plan=S.currentPlan;
+
+  document.getElementById('bookHotels').innerHTML=(plan.hotels||[]).map((h,i)=>`
+    <label class="booking-option ${i===0?'selected':''}">
+      <input type="radio" name="hotel" value="${h.price}" ${i===0?'checked':''} onchange="updateBookingStyle(this);calcTotal()">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.9rem">${h.name}</div>
+        <div style="color:var(--text2);font-size:.8rem">${h.rating} · ${h.location||''}</div>
+      </div>
+      <div style="font-family:var(--font-m);font-weight:700;color:var(--accent)">$${h.price.toLocaleString()}</div>
+    </label>
+  `).join('');
+
+  document.getElementById('bookFlights').innerHTML=(plan.flights||[]).map((f,i)=>`
+    <label class="booking-option ${i===0?'selected':''}">
+      <input type="radio" name="flight" value="${f.price}" ${i===0?'checked':''} onchange="updateBookingStyle(this);calcTotal()">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.9rem">${f.name}</div>
+        <div style="color:var(--text2);font-size:.8rem">${f.type} · ${f.duration||''} · ${f.airline||''}</div>
+      </div>
+      <div style="font-family:var(--font-m);font-weight:700;color:var(--accent)">$${f.price.toLocaleString()}</div>
+    </label>
+  `).join('');
+
+  const acts=plan.activities||[];
+  document.getElementById('bookActivities').innerHTML=acts.map(a=>`
+    <label class="booking-option">
+      <input type="checkbox" class="act-chk" value="${a.price}" onchange="updateBookingStyle(this,true);calcTotal()">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.9rem">${a.name}</div>
+        <div style="color:var(--text2);font-size:.8rem">${a.category||''} · ${a.duration||''} ${a.description?'· '+a.description:''}</div>
+      </div>
+      <div style="font-family:var(--font-m);font-weight:700;color:var(--accent)">$${a.price.toLocaleString()}</div>
+    </label>
+  `).join('');
+
+  calcTotal();
+  nav('pgBooking');
+}
+
+function updateBookingStyle(inp,isCheckbox=false){
+  if(!isCheckbox){
+    document.querySelectorAll(`input[name="${inp.name}"]`).forEach(el=>{
+      el.closest('.booking-option').classList.toggle('selected',el.checked);
+    });
+  } else {
+    inp.closest('.booking-option').classList.toggle('selected',inp.checked);
+  }
+}
+
+function calcTotal(){
+  const h=parseFloat(document.querySelector('input[name="hotel"]:checked')?.value||0);
+  const f=parseFloat(document.querySelector('input[name="flight"]:checked')?.value||0);
+  let a=0;
+  document.querySelectorAll('.act-chk:checked').forEach(c=>a+=parseFloat(c.value));
+  const tax=45,total=h+f+a+tax;
+  S.bookingTotal=total;
+  document.getElementById('sumHotel').textContent=`$${h.toLocaleString()}`;
+  document.getElementById('sumFlight').textContent=`$${f.toLocaleString()}`;
+  document.getElementById('sumAct').textContent=`$${a.toLocaleString()}`;
+  document.getElementById('sumTotal').textContent=`$${total.toLocaleString()}`;
+  const payEl=document.getElementById('payAmt');
+  if(payEl) payEl.textContent=`$${total.toFixed(2)}`;
+  document.getElementById('modalPayAmt').textContent=`$${total.toFixed(2)}`;
+}
+
+// ============================================================ PAYMENT
+function setPayTab(tab){
+  ['card','upi','paypal'].forEach(t=>{
+    const formEl=document.getElementById('form'+capitalize(t));
+    const tabEl=document.getElementById('tab'+capitalize(t));
+    if(formEl) formEl.style.display=t===tab?'block':'none';
+    if(tabEl) tabEl.className=t===tab?'btn btn-primary-custom flex-grow-1 btn-sm':'btn btn-glass-custom flex-grow-1 btn-sm';
+  });
+}
+function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+
+function fmtCard(inp){
+  let v=inp.value.replace(/\D/g,'').substring(0,16);
+  inp.value=v.replace(/(.{4})/g,'$1 ').trim();
+}
+
+function processPayment(){
+  const amt=S.bookingTotal||parseFloat(document.getElementById('payAmt')?.textContent?.replace(/[$,]/g,'')||0);
+  if(amt<=0){toast('No booking selected. Please select hotel and flight.','warn');nav('pgBooking');return}
+  document.getElementById('payModal').style.display='flex';
+  setTimeout(()=>{
+    document.getElementById('payModal').style.display='none';
+    const dest=S.currentPlan?.destinationName||'Trip';
+    S.trips.push({dest,date:new Date().toLocaleDateString(),status:'Confirmed',amt,id:Date.now()});
+    saveTrips();
+    S.expenses.push({amt,desc:`${dest} – Booking`,cat:'Hotel',date:new Date().toLocaleDateString(),id:Date.now()});
+    saveExp();
+    pushNotif('💳','Payment Confirmed',`Booking for ${dest} confirmed — $${amt.toFixed(2)}`);
+    toast('Payment successful! Booking confirmed 🎉','success');
+    nav('pgTrips');
+  },3200);
+}
+
+// ============================================================ EXPENSE TRACKER
+const CAT_COLORS={Food:'var(--gold)',Transport:'var(--accent)',Hotel:'var(--pink)',Shopping:'var(--accent2)',Activities:'#00e5a0',Misc:'var(--text2)'};
+const CAT_ICONS={Food:'🍽️',Transport:'🚕',Hotel:'🏨',Shopping:'🛍️',Activities:'🎫',Misc:'📦'};
+
+function addExpense(){
+  const amt=parseFloat(document.getElementById('exAmt').value);
+  const desc=document.getElementById('exDesc').value.trim();
+  const cat=document.getElementById('exCat').value;
+  const date=document.getElementById('exDate').value||new Date().toISOString().split('T')[0];
+  const trip=document.getElementById('exTrip')?.value||'';
+  if(!amt||amt<=0){toast('Enter a valid amount','error');return}
+  if(!desc){toast('Enter a description','error');return}
+  S.expenses.push({id:Date.now(),amt,desc,cat,date,trip});
+  saveExp();
+  document.getElementById('exAmt').value='';
+  document.getElementById('exDesc').value='';
+  toast('Expense logged ✓','success');
+  renderExp();
+}
+
+function delExpense(id){
+  S.expenses=S.expenses.filter(e=>e.id!==id);
+  saveExp();
+  renderExp();
+}
+
+function renderExp(){
+  const limit=parseFloat(document.getElementById('expLimit')?.value)||5000;
+  const search=(document.getElementById('expSearch')?.value||'').toLowerCase();
+  const catFilter=(document.getElementById('expCatFilter')?.value||'');
+  const filtered=S.expenses.filter(e=>{
+    const matchSearch=!search||(e.desc.toLowerCase().includes(search)||e.cat.toLowerCase().includes(search)||e.trip?.toLowerCase().includes(search));
+    const matchCat=!catFilter||e.cat===catFilter;
+    return matchSearch&&matchCat;
+  });
+
+  const spent=S.expenses.reduce((s,e)=>s+e.amt,0);
+  const rem=limit-spent;
+  const pct=Math.min(100,(spent/limit)*100);
+
+  document.getElementById('expBudgetDisp').textContent='$'+limit.toLocaleString();
+  document.getElementById('expSpent').textContent='$'+spent.toLocaleString();
+  document.getElementById('expRem').textContent='$'+Math.max(0,rem).toLocaleString();
+  document.getElementById('expPct').textContent=pct.toFixed(1)+'%';
+  document.getElementById('expCount').textContent=S.expenses.length;
+
+  const bar=document.getElementById('expBar');
+  bar.style.width=pct+'%';
+  bar.style.background=pct>90?'linear-gradient(90deg,var(--accent3),#dc2626)':pct>75?'linear-gradient(90deg,var(--gold),var(--accent3))':'linear-gradient(90deg,var(--accent),var(--accent2))';
+
+  const cats={};
+  S.expenses.forEach(e=>{cats[e.cat]=(cats[e.cat]||0)+e.amt});
+  document.getElementById('expCatBreakdown').innerHTML=Object.entries(cats).map(([cat,total])=>`
+    <div class="col-6 col-md-4">
+      <div style="background:var(--surf);border-radius:9px;padding:.5rem .8rem;border:1px solid var(--border)">
+        <div style="font-size:.74rem;color:var(--text2);margin-bottom:.12rem">${CAT_ICONS[cat]||'📦'} ${cat}</div>
+        <div style="font-family:var(--font-m);font-weight:700;font-size:.95rem;color:${CAT_COLORS[cat]||'var(--text)'}">$${total.toFixed(0)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const listEl=document.getElementById('expList');
+  if(!filtered.length){
+    listEl.innerHTML='<div style="text-align:center;color:var(--text2);padding:2rem;font-size:.88rem">No expenses found. Start tracking!</div>';
+    return;
+  }
+  listEl.innerHTML=[...filtered].reverse().map(e=>`
+    <div class="expense-item">
+      <div class="cat-icon" style="background:${CAT_COLORS[e.cat]||'var(--surf2)'}20;color:${CAT_COLORS[e.cat]||'var(--text)'}">
+        ${CAT_ICONS[e.cat]||'📦'}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.desc}</div>
+        <div style="color:var(--text2);font-size:.73rem">${e.cat}${e.trip?` · ${e.trip}`:''} · ${e.date}</div>
+      </div>
+      <div style="font-family:var(--font-m);font-weight:700;color:var(--accent3);font-size:.95rem;white-space:nowrap">-$${e.amt.toFixed(2)}</div>
+      <button onclick="delExpense(${e.id})" style="background:rgba(249,112,102,.12);border:1px solid var(--accent3);border-radius:7px;padding:.18rem .48rem;color:var(--accent3);font-size:.72rem;cursor:pointer;flex-shrink:0" title="Delete">✕</button>
+    </div>
+  `).join('');
+}
+
+function exportExpenses(){
+  if(!S.expenses.length){toast('No expenses to export','warn');return}
+  let csv='Date,Category,Description,Amount,Trip\n';
+  S.expenses.forEach(e=>{csv+=`${e.date},${e.cat},"${e.desc}",${e.amt},"${e.trip||''}"\n`});
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`smarttrip_expenses_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();URL.revokeObjectURL(url);
+  toast('Expenses exported as CSV 📤','success');
+}
+
+// ============================================================ TRIPS
+function saveTrip(){
+  if(!S.currentPlan){toast('No active plan to save','warn');return}
+  const dest=S.currentPlan.destinationName;
+  if(S.trips.find(t=>t.dest===dest&&t.status==='Saved')){toast('Already saved to My Trips!','info');return}
+  S.trips.push({id:Date.now(),dest,date:new Date().toLocaleDateString(),status:'Saved',plan:S.currentPlan});
+  saveTrips();
+  toast('Trip saved to dashboard! 💾','success');
+  updateDash();
+}
+
+function shareTrip(){
+  if(!S.currentPlan){toast('Generate a plan first','warn');return}
+  const text=`Check out my ${S.currentPlan.destinationName} trip plan on SmartTrip AI! ${S.currentPlan.estimatedCost} · Best season: ${S.currentPlan.bestSeason}`;
+  if(navigator.share){navigator.share({title:'My Trip Plan',text,url:window.location.href}).catch(()=>{})}
+  else if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>toast('Trip details copied to clipboard! 🔗','success'))}
+  else toast('Share: '+text,'info');
+}
+
+function exportItinerary(){
+  if(!S.currentPlan){toast('Generate an itinerary first','warn');return}
+  const plan=S.currentPlan;
+  const content=`SmartTrip AI — ${plan.destinationName} Itinerary\n${'='.repeat(50)}\n\nEstimated Cost: ${plan.estimatedCost}\nBest Season: ${plan.bestSeason}\n\nDescription:\n${plan.description}\n\nDay-wise Plan:\n${(plan.itinerary||[]).map(d=>`\nDay ${d.day}: ${d.title}\n${d.activities.map(a=>'  • '+a).join('\n')}\n  🏨 Stay: ${d.accommodation}\n  🍽️ Food: ${d.foodHighlight}`).join('\n')}\n\nPro Tips:\n${(plan.tips||[]).map((t,i)=>`${i+1}. ${t}`).join('\n')}\n\nGenerated by SmartTrip AI`;
+  const blob=new Blob([content],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`${plan.destinationName.replace(/[^a-z0-9]/gi,'_')}_itinerary.txt`;
+  a.click();URL.revokeObjectURL(url);
+  toast('Itinerary exported! 📄','success');
+}
+
+function renderTrips(){
+  const el=document.getElementById('activeTrips');
+  if(!el) return;
+  if(!S.trips.length){
+    el.innerHTML='<div class="col-12 text-center" style="color:var(--text2);padding:3rem">No trips yet. <a href="#" onclick="nav(\'pgPlan\')" style="color:var(--accent)">Plan your first adventure!</a></div>';
+    return;
+  }
+  el.innerHTML=S.trips.slice().reverse().map(t=>`
+    <div class="col-md-6">
+      <div class="glass p-4 d-flex justify-content-between align-items-center gap-3" style="border-left:3px solid ${t.status==='Confirmed'?'var(--accent)':'var(--accent2)'}">
+        <div style="min-width:0;flex:1">
+          <h5 style="font-weight:700;margin-bottom:.18rem;font-size:.97rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.dest}</h5>
+          <div style="color:var(--text2);font-size:.78rem">Saved ${t.date} · <span style="color:${t.status==='Confirmed'?'var(--accent)':'var(--accent2)'};font-weight:600">${t.status}</span></div>
+          ${t.amt?`<div style="font-family:var(--font-m);color:var(--gold);font-size:.82rem;margin-top:.15rem">Paid: $${t.amt.toFixed(2)}</div>`:''}
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-glass-custom btn-sm" onclick="toast('Loading trip plan...','info')">View</button>
+          <button class="btn btn-danger-custom btn-sm" style="padding:.3rem .7rem;font-size:.75rem" onclick="deleteTrip(${t.id})">✕</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function deleteTrip(id){
+  S.trips=S.trips.filter(t=>t.id!==id);
+  saveTrips();
+  renderTrips();
+  updateDash();
+  toast('Trip removed','info');
+}
+
+// ============================================================ WISHLIST
+function addToWishlist(dest){
+  if(!dest){toast('No destination to wishlist','warn');return}
+  if(S.wishlist.includes(dest)){toast('Already in wishlist!','info');return}
+  S.wishlist.push(dest);
+  saveWish();
+  toast(`${dest} saved to wishlist ❤️`,'success');
+  updateDash();
+}
+
+function removeFromWishlist(dest){
+  S.wishlist=S.wishlist.filter(d=>d!==dest);
+  saveWish();
+  renderWishlist();
+  updateDash();
+  toast('Removed from wishlist','info');
+}
+
+const WISH_IMGS=[
+  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&q=70',
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=70',
+  'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=500&q=70',
+  'https://images.unsplash.com/photo-1503917988258-f87a78e3c995?w=500&q=70',
+];
+
+function renderWishlist(){
+  const el=document.getElementById('wishGrid');
+  if(!el) return;
+  if(!S.wishlist.length){
+    el.innerHTML=`<div class="col-12 text-center" style="padding:4rem"><div style="font-size:3rem;margin-bottom:.9rem">❤️</div><h5 style="color:var(--text2)">Your wishlist is empty</h5><p style="color:var(--text2);font-size:.88rem">Discover destinations and save favorites</p><button class="btn btn-primary-custom mt-2" onclick="nav('pgHome')">Explore Destinations</button></div>`;
+    return;
+  }
+  el.innerHTML=S.wishlist.map((dest,i)=>`
+    <div class="col-md-6 col-lg-4">
+      <div class="glass p-0 overflow-hidden trip-card">
+        <div class="position-relative">
+          <img src="${WISH_IMGS[i%WISH_IMGS.length]}" style="width:100%;height:195px;object-fit:cover">
+          <div class="trip-overlay"></div>
+          <button onclick="removeFromWishlist('${dest.replace(/'/g,"\\'")}');event.stopPropagation()" style="position:absolute;top:.65rem;right:.65rem;background:rgba(249,112,102,.85);border:none;border-radius:50%;width:28px;height:28px;color:#fff;font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+          <div class="position-absolute bottom-0 start-0 p-3"><h5 style="font-weight:700;margin:0;font-size:.95rem">${dest}</h5></div>
+        </div>
+        <div class="p-3"><button class="btn btn-primary-custom w-100 btn-sm" onclick="quickDest('${dest.replace(/'/g,"\\'")}')">Generate AI Plan 🚀</button></div>
+      </div>
+    </div>
+  `).join('')+`
+    <div class="col-md-6 col-lg-4"><div class="glass d-flex align-items-center justify-content-center cursor" style="min-height:260px;border:2px dashed var(--border2)" onclick="nav('pgHome')">
+      <div class="text-center"><div style="font-size:2.5rem;color:var(--text2);margin-bottom:.4rem">+</div><div style="color:var(--text2);font-size:.88rem;font-weight:600">Discover More</div></div>
+    </div></div>
+  `;
+}
+
+// ============================================================ NOTIFICATIONS
+function pushNotif(icon,title,desc){
+  S.notifs.unshift({icon,title,desc,time:'Just now',unread:true});
+  if(S.notifs.length>50) S.notifs=S.notifs.slice(0,50);
+  saveNotifs();
+  updateNav();
+}
+
+function renderNotifs(){
+  const el=document.getElementById('notifList');
+  if(!el) return;
+  if(!S.notifs.length){el.innerHTML='<div class="text-center" style="color:var(--text2);padding:3rem;font-size:.92rem">All caught up! 🎉</div>';return}
+  el.innerHTML=S.notifs.map((n,i)=>`
+    <div class="notif-item ${n.unread?'unread':''}" onclick="markRead(${i})">
+      <span class="notif-icon">${n.icon}</span>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="font-weight:700;font-size:.88rem">${n.title}</div>
+          <div style="color:var(--text2);font-size:.7rem;white-space:nowrap;margin-left:.4rem">${n.time}</div>
+        </div>
+        <div style="color:var(--text2);font-size:.82rem;margin-top:.18rem">${n.desc}</div>
+      </div>
+      ${n.unread?'<div style="width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:.3rem"></div>':''}
+    </div>
+  `).join('');
+  S.notifs.forEach(n=>n.unread=false);
+  saveNotifs();
+  updateNav();
+}
+
+function markRead(i){S.notifs[i].unread=false;saveNotifs();updateNav()}
+function clearNotifs(){S.notifs=[];saveNotifs();renderNotifs();updateNav();toast('Notifications cleared','success')}
+
+// ============================================================ PROFILE
+function renderProfile(){
+  if(!S.user) return;
+  const u=S.user;
+  document.getElementById('profName').textContent=u.name;
+  document.getElementById('profEmail').textContent=u.email;
+  document.getElementById('profAvLg').textContent=u.avatar||u.name.charAt(0).toUpperCase();
+  document.getElementById('profNameEdit').value=u.name;
+  document.getElementById('profEmailEdit').value=u.email;
+  document.getElementById('profPhone').value=u.phone||'';
+  document.getElementById('profPrefs').value=u.prefs||'';
+  document.getElementById('profCity').value=u.city||'';
+  document.getElementById('profTripStat').textContent=S.trips.length;
+}
+
+function updateProfile(){
+  const name=document.getElementById('profNameEdit').value.trim();
+  if(!name){toast('Name is required','error');return}
+  S.user.name=name;
+  S.user.phone=document.getElementById('profPhone').value;
+  S.user.prefs=document.getElementById('profPrefs').value;
+  S.user.city=document.getElementById('profCity').value;
+  S.user.avatar=name.charAt(0).toUpperCase();
+  DB.set('user',S.user);
+  updateNav();
+  renderProfile();
+  toast('Profile updated! ✓','success');
+}
+
+// ============================================================ BUDDIES
+const BUDDIES=[
+  {name:'Alex Johnson',dest:'Tokyo',match:98,rating:4.9,age:26,style:'Solo',img:'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&q=80',int:['Tech','Anime','Street Food'],bio:"Photography-obsessed developer who loves discovering hidden gems in Tokyo's backstreets. Looking for a tech-savvy travel companion!"},
+  {name:'Sarah Lee',dest:'Bali',match:92,rating:4.7,age:24,style:'Group',img:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80',int:['Yoga','Beaches','Wellness'],bio:"Wellness coach planning a yoga retreat + beach exploration. Positive vibes only — building a small group!"},
+  {name:'David Chen',dest:'Swiss Alps',match:89,rating:4.8,age:29,style:'Solo',img:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',int:['Hiking','Photography','Nature'],bio:"Landscape photographer capturing the world's most beautiful mountains. Looking for a hiking partner!"},
+  {name:'Priya Sharma',dest:'Paris',match:86,rating:4.6,age:27,style:'Couple',img:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80',int:['Art','Fashion','Cafés'],bio:"Art historian and food blogger exploring Parisian culture. Always hunting for the best croissants in the city!"},
+  {name:'Marco Rossi',dest:'Rome',match:84,rating:4.9,age:31,style:'Solo',img:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80',int:['History','Architecture','Wine'],bio:"Architect passionate about ancient civilizations. Let's explore the Colosseum and hidden Roman gems together!"},
+  {name:'Yuki Tanaka',dest:'Kyoto',match:91,rating:4.8,age:25,style:'Group',img:'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80',int:['Culture','Tea Ceremony','Photography'],bio:"Cultural enthusiast documenting traditional Japanese arts. Planning a full cherry blossom season group trip!"},
+  {name:'Aisha Patel',dest:'Maldives',match:88,rating:4.7,age:28,style:'Couple',img:'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400&q=80',int:['Diving','Luxury','Romance'],bio:"Marine biologist and travel writer. Planning a luxury diving trip to the Maldives for an anniversary celebration!"},
+  {name:'James Wilson',dest:'New York',match:82,rating:4.5,age:33,style:'Group',img:'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80',int:['Music','Nightlife','Comedy'],bio:"Music producer exploring NYC's vibrant nightlife and entertainment scene. Building a fun group of explorers!"},
+];
+
+function renderBuddies(){
+  const el=document.getElementById('buddiesGrid');
+  if(!el) return;
+  const filter=(document.getElementById('buddyFilter')?.value||'').toLowerCase();
+  const ageFilter=document.getElementById('buddyAgeFilter')?.value||'';
+  const shown=BUDDIES.filter(b=>{
+    if(filter&&!b.dest.toLowerCase().includes(filter)&&!b.name.toLowerCase().includes(filter)) return false;
+    if(ageFilter==='18-25'&&(b.age<18||b.age>25)) return false;
+    if(ageFilter==='26-35'&&(b.age<26||b.age>35)) return false;
+    if(ageFilter==='36+'&&b.age<36) return false;
+    if(S.activeBuddyFilter!=='All'&&b.style!==S.activeBuddyFilter) return false;
+    return true;
+  });
+  if(!shown.length){el.innerHTML='<div class="col-12 text-center" style="color:var(--text2);padding:3rem">No matches found. Try adjusting filters.</div>';return}
+  el.innerHTML=shown.map(b=>`
+    <div class="col-md-6 col-lg-4">
+      <div class="glass buddy-card p-4 h-100">
+        <div class="match-badge">${b.match}% Match</div>
+        <div class="text-center mb-3"><img src="${b.img}" class="rounded-circle" style="width:86px;height:86px;object-fit:cover;border:3px solid var(--accent)"></div>
+        <h5 style="font-weight:700;text-align:center;margin-bottom:.25rem;font-size:.97rem">${b.name}</h5>
+        <div style="text-align:center;color:var(--accent);font-size:.82rem;margin-bottom:.35rem">📍 ${b.dest}</div>
+        <div style="display:flex;justify-content:center;gap:.9rem;margin-bottom:.7rem;font-size:.76rem;color:var(--text2)">
+          <span>⭐ ${b.rating}</span><span>🎂 ${b.age}</span><span>👤 ${b.style}</span>
+        </div>
+        <p style="color:var(--text2);font-size:.8rem;line-height:1.55;text-align:center;margin-bottom:.9rem">${b.bio}</p>
+        <div class="d-flex flex-wrap gap-1 justify-content-center mb-3">
+          ${b.int.map(t=>`<span class="chip" style="font-size:.68rem;padding:.18rem .55rem">${t}</span>`).join('')}
+        </div>
+        <button class="btn btn-outline-custom w-100 btn-sm" onclick="viewBuddy(${BUDDIES.indexOf(b)})">View Profile</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleBuddyFilter(el,val){
+  document.querySelectorAll('#buddyStyleFilters .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  S.activeBuddyFilter=val;
+  renderBuddies();
+}
+
+function viewBuddy(idx){
+  const b=BUDDIES[idx];
+  if(!b) return;
+  document.getElementById('bpImg').src=b.img;
+  document.getElementById('bpName').textContent=b.name;
+  document.getElementById('bpDest').textContent=b.dest;
+  document.getElementById('bpMatch').textContent=b.match;
+  document.getElementById('bpRating').textContent=b.rating;
+  document.getElementById('bpAge').textContent=b.age;
+  document.getElementById('bpBio').textContent=b.bio;
+  document.getElementById('bpInterests').innerHTML=b.int.map(t=>`<span class="chip active">${t}</span>`).join('');
+  document.getElementById('chatAv').src=b.img;
+  document.getElementById('chatName').textContent=b.name;
+  document.getElementById('chatBox').innerHTML=`
+    <div class="text-center mb-3"><span style="background:var(--surf2);border:1px solid var(--border);border-radius:100px;padding:.22rem .9rem;font-size:.72rem;color:var(--text2)">🔒 End-to-end encrypted</span></div>
+    <div class="msg msg-bot">Hey! I saw we have a ${b.match}% match score — so exciting! 🎯 Are you planning a trip to ${b.dest} soon? ✈️</div>
+  `;
+  nav('pgBuddyProfile');
+}
+
+// ============================================================ CHAT
+const BOT_REPLIES=[
+  "That sounds amazing! I've been researching that exact spot too 🌍","Totally! Let's add it to our shared itinerary.",
+  "Great idea — we should book that well in advance though.","I'm so excited about this trip! 🎉",
+  "Have you checked the weather forecast for those dates?","Let's split the hotel cost — I found a deal on Booking.com!",
+  "I'll bring my camera gear — it'll be perfect for that location!","Agreed! Local transport will save us a lot vs taxis.",
+  "Should we create a shared expense tracker for the trip?","I heard there's a great food tour near that area!",
+];
+
+function sendChat(){
+  const inp=document.getElementById('chatInput');
+  const msg=inp.value.trim();
+  if(!msg) return;
+  const box=document.getElementById('chatBox');
+  box.innerHTML+=`<div class="msg msg-user">${escHtml(msg)}</div>`;
+  inp.value='';
+  box.scrollTop=box.scrollHeight;
+  setTimeout(()=>{
+    const r=BOT_REPLIES[Math.floor(Math.random()*BOT_REPLIES.length)];
+    box.innerHTML+=`<div class="msg msg-bot">${r}</div>`;
+    box.scrollTop=box.scrollHeight;
+  },700+Math.random()*900);
+}
+
+function sendAttachment(type){
+  const box=document.getElementById('chatBox');
+  box.innerHTML+=`<div class="msg msg-user" style="opacity:.8;font-style:italic">Shared: ${type}</div>`;
+  box.scrollTop=box.scrollHeight;
+  setTimeout(()=>{
+    box.innerHTML+=`<div class="msg msg-bot">Got it! ${type.includes('Location')?'That looks perfect for Day 2 of our trip! 📍':'Great photo! This is definitely on my list now 📸'}</div>`;
+    box.scrollTop=box.scrollHeight;
+  },700);
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// ============================================================ REVIEW
+function setRating(n){
+  S.currentRating=n;
+  const labels=['','Poor 😞','Fair 😐','Good 😊','Great 😁','Excellent 🤩'];
+  document.getElementById('starLabel').textContent=labels[n];
+  document.querySelectorAll('.star').forEach((s,i)=>{s.textContent=i<n?'★':'☆';s.classList.toggle('lit',i<n)});
+}
+
+function submitReview(){
+  if(!S.currentRating){toast('Please select a star rating first','warn');return}
+  const title=document.getElementById('revTitle')?.value?.trim()||'Great experience!';
+  toast('Review submitted! Thank you ⭐','success');
+  pushNotif('⭐','Review Submitted',`Your ${S.currentRating}-star review has been shared with the SmartTrip community.`);
+  S.currentRating=0;
+  document.querySelectorAll('.star').forEach(s=>{s.textContent='☆';s.classList.remove('lit')});
+  document.getElementById('starLabel').textContent='Tap to rate';
+  nav('pgTrips');
+}
+
+// ============================================================ CURRENCY CONVERTER
+const FX_RATES={USD:1,EUR:0.92,GBP:0.79,INR:83.2,JPY:149.5,AUD:1.53,CAD:1.36,CHF:0.90,SGD:1.34,THB:35.1};
+
+function convertCurrency(){
+  const amt=parseFloat(document.getElementById('cvrAmt')?.value)||100;
+  const from=document.getElementById('cvrFrom')?.value||'USD';
+  const to=document.getElementById('cvrTo')?.value||'INR';
+  if(!FX_RATES[from]||!FX_RATES[to]){toast('Currency not found','error');return}
+  const rate=FX_RATES[to]/FX_RATES[from];
+  const result=amt*rate;
+  const syms={USD:'$',EUR:'€',GBP:'£',INR:'₹',JPY:'¥',AUD:'A$',CAD:'C$',CHF:'Fr',SGD:'S$',THB:'฿'};
+  document.getElementById('cvrOutput').textContent=`${syms[to]||''}${result.toLocaleString(undefined,{maximumFractionDigits:2})}`;
+  document.getElementById('cvrRate').textContent=`1 ${from} = ${rate.toFixed(4)} ${to}`;
+
+  // Quick compare grid
+  const popular=['USD','EUR','GBP','INR','JPY','AUD'];
+  const grid=document.getElementById('cvrGrid');
+  if(grid) grid.innerHTML=popular.filter(c=>c!==from).map(c=>{
+    const r=FX_RATES[c]/FX_RATES[from];
+    return `<div class="col-6 col-md-4"><div style="background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:.55rem .75rem;text-align:center">
+      <div style="color:var(--text2);font-size:.7rem;margin-bottom:.15rem">${amt} ${from} =</div>
+      <div style="font-family:var(--font-m);font-weight:700;color:var(--accent);font-size:.9rem">${syms[c]||''}${(amt*r).toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+      <div style="color:var(--text2);font-size:.68rem">${c}</div>
+    </div></div>`;
+  }).join('');
+}
+
+// ============================================================ SETTINGS
+function clearData(){
+  if(!confirm('This will wipe all local data. Are you sure?')) return;
+  DB.clear();
+  Object.assign(S,{user:null,trips:[],expenses:[],wishlist:[],notifs:[],moods:[],currentPlan:null,bookingTotal:0});
+  doLogout();
+  toast('All data cleared','info');
+}
+
+// ============================================================ VOICE SEARCH
+function voiceSearch(inputId){
+  if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){
+    toast('Voice search not supported in this browser','warn');return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const r=new SR();
+  r.lang='en-US';r.interimResults=false;r.maxAlternatives=1;
+  toast('🎤 Listening... speak your destination','info');
+  r.onresult=e=>{
+    const txt=e.results[0][0].transcript;
+    const el=document.getElementById(inputId);
+    if(el){el.value=txt;toast(`Heard: "${txt}" 🎤`,'success')}
+  };
+  r.onerror=()=>toast('Could not hear clearly, please try again','warn');
+  r.start();
+}
+
+// ============================================================ EXPORT DASHBOARD
+function exportDashboard(){
+  const d={user:S.user?.name,trips:S.trips.length,spent:S.expenses.reduce((s,e)=>s+e.amt,0),wishlist:S.wishlist,exported:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='smarttrip_dashboard.json';a.click();
+  URL.revokeObjectURL(url);
+  toast('Dashboard data exported! 📤','success');
+}
+
+// ============================================================ HOME BUILD
+const FEATURE_LIST=[
+  {icon:'🤖',title:'Gemini AI Plans',desc:'Full day-wise itineraries in seconds for any duration, 1 to 30 days.'},
+  {icon:'🌤️',title:'Live Weather',desc:'Real-time temperatures and forecasts from Open-Meteo API.'},
+  {icon:'🗺️',title:'Interactive Maps',desc:'Route visualization with Leaflet & OpenStreetMap.'},
+  {icon:'👥',title:'Buddy Matching',desc:'Connect with compatible travelers heading to the same destination.'},
+  {icon:'💰',title:'Smart Budgeting',desc:'Expense tracking with category analytics and CSV export.'},
+  {icon:'💱',title:'Currency Converter',desc:'Real-time rates for 10+ currencies to plan your budget.'},
+];
+
+// ============================================================ INIT
+function initApp(){
+  const planDate=document.getElementById('planDate');
+  if(planDate) planDate.min=new Date().toISOString().split('T')[0];
+  const exDate=document.getElementById('exDate');
+  if(exDate) exDate.value=new Date().toISOString().split('T')[0];
+
+  // Apply stored theme
+  document.getElementById('themeBtn').textContent=S.theme==='dark'?'🌙':'☀️';
+  const tgl=document.getElementById('themeToggle');
+  if(tgl) tgl.checked=S.theme!=='light';
+
+  buildHome();
+  buildMoodGrid();
+  renderBuddies();
+  updateNav();
+
+  // Splash timeout
+  setTimeout(()=>{
+    const sp=document.getElementById('pgSplash');
+    if(sp&&sp.classList.contains('active')) nav(S.user?'pgDash':'pgHome');
+  },2400);
+}
+
+document.addEventListener('DOMContentLoaded',initApp);
+
+// Keyboard shortcut: Escape closes AI panel
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&aiPanelOpen){aiPanelOpen=false;document.getElementById('aiPanel').classList.remove('open')}
+});
+</script>
+</body>
+</html>
