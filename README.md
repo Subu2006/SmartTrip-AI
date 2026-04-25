@@ -35,7 +35,7 @@ Whether you're a solo traveler, student, family planner, backpacker, or adventur
 - 🌍 Website: `https://smarttrip-ai.vercel.app`
 - ⚙️ Admin Panel: `https://admin.smarttrip-ai.vercel.app`
 - 📘 API Docs: `https://api.smarttrip-ai.com/docs`
-- 🎥 Video Demo: `Coming Soon`
+- 🎥 Video Demo: `https://youtu.be/NXhnZuSO0HQ`
 
 ---
 
