@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SmartTrip AI is a production-ready travel intelligence platform with planning, budgeting, buddy matching, maps, weather, booking, and analytics.">
+  <meta name="theme-color" content="#08111f">
+  <title>SmartTrip AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <div id="splash" class="splash-screen">
+    <div class="splash-mark">ST</div>
+    <h1>SmartTrip AI</h1>
+    <p>Live travel intelligence for real-world trips</p>
+    <div class="splash-bar"><span></span></div>
+  </div>
+
+  <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <nav class="navbar navbar-expand-lg app-nav sticky-top">
+    <div class="container-xl">
+      <a class="navbar-brand" href="#" data-nav="home">
+        <span class="brand-mark">SmartTrip</span>
+        <span class="brand-accent">AI</span>
+      </a>
+      <div class="d-flex gap-2 align-items-center ms-auto order-lg-2">
+        <button class="btn btn-app btn-ghost btn-sm" id="themeToggleBtn" type="button">Theme</button>
+        <button class="btn btn-app btn-primary btn-sm" id="assistantToggleBtn" type="button">AI Assistant</button>
+        <button class="navbar-toggler border-0 text-light" type="button" data-bs-toggle="collapse" data-bs-target="#navLinks">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
+      <div class="collapse navbar-collapse order-lg-1" id="navLinks">
+        <ul class="navbar-nav ms-auto gap-lg-2" id="navPublic">
+          <li class="nav-item"><a class="nav-link" href="#" data-nav="home">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-nav="signup">Signup</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-nav="login">Login</a></li>
+        </ul>
+        <ul class="navbar-nav ms-auto gap-lg-2 d-none" id="navPrivate">
+          <li class="nav-item"><a class="nav-link" href="#" data-nav="dashboard">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-nav="planner">Plan</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-nav="trips">Trips</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-nav="expenses">Budget</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-nav="map">Map</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+              <span class="avatar-mini" id="navAvatar">S</span>
+              <span id="navUserName">Traveler</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark app-dropdown">
+              <li><a class="dropdown-item" href="#" data-nav="profile">Profile</a></li>
+              <li><a class="dropdown-item" href="#" data-nav="notifications">Notifications</a></li>
+              <li><a class="dropdown-item" href="#" data-nav="packing">Packing List</a></li>
+              <li><a class="dropdown-item" href="#" data-nav="currency">Currency</a></li>
+              <li><a class="dropdown-item" href="#" data-nav="settings">Settings</a></li>
+              <li><a class="dropdown-item" href="#" data-nav="reviews">Reviews</a></li>
+              <li><a class="dropdown-item" href="#" data-nav="admin" id="adminNavItem">Admin</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="#" id="logoutBtn">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div id="assistantPanel" class="assistant-panel">
+    <div class="assistant-header">
+      <div>
+        <div class="eyebrow">Smart Assistant</div>
+        <h5>Travel copilot</h5>
+      </div>
+      <button class="btn btn-app btn-ghost btn-sm" id="assistantCloseBtn" type="button">Close</button>
+    </div>
+    <div id="assistantMessages" class="assistant-messages"></div>
+    <div class="assistant-input">
+      <input id="assistantInput" class="form-control" type="text" placeholder="Ask about budget, weather, visas, routes, or itinerary quality">
+      <button class="btn btn-app btn-primary" id="assistantSendBtn" type="button">Send</button>
+    </div>
+  </div>
+
+  <main class="container-xl py-4">
+    <div id="globalStatus" class="visually-hidden" aria-live="polite"></div>
+
+    <section id="page-home" class="page active">
+      <div class="hero-grid">
+        <div class="hero-copy card-shell">
+          <div class="eyebrow">Next-generation travel intelligence</div>
+          <h1>Plan smarter trips with live data, realistic costs, and AI-backed decisions.</h1>
+          <p class="lead-copy">SmartTrip AI connects itinerary planning, weather, maps, budgeting, booking workflows, reviews, travel buddies, and account-level analytics into one travel operating system.</p>
+          <div class="d-flex gap-3 flex-wrap">
+            <button class="btn btn-app btn-primary" data-nav="planner">Start planning</button>
+            <button class="btn btn-app btn-ghost" data-nav="signup">Create free account</button>
+          </div>
+          <div class="hero-metrics">
+            <div><strong>Exact day plans</strong><span>1 to 30 days without collapsing to generic output</span></div>
+            <div><strong>Live integrations</strong><span>Weather, currency, map search, route points, and geocoding</span></div>
+            <div><strong>Production-minded</strong><span>SQLite persistence, secure auth, sessions, validation, and error logging</span></div>
+          </div>
+        </div>
+        <div class="card-shell hero-form">
+          <div class="section-head">
+            <div class="eyebrow">Quick planner</div>
+            <h3>Generate an intelligent travel recommendation</h3>
+          </div>
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="homeDestination" class="form-label">Destination</label>
+              <div class="input-with-btn">
+                <input id="homeDestination" class="form-control" type="text" placeholder="Kyoto, Bali, Paris, Manali...">
+                <button class="btn btn-app btn-ghost btn-sm" type="button" id="homeVoiceBtn">Voice</button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="homeDays" class="form-label">Days</label>
+              <input id="homeDays" class="form-control" type="number" min="1" max="30" value="5">
+            </div>
+            <div class="col-md-6">
+              <label for="homeBudget" class="form-label">Budget</label>
+              <input id="homeBudget" class="form-control" type="number" min="300" value="2500">
+            </div>
+            <div class="col-md-6">
+              <label for="homeCompanion" class="form-label">Companion</label>
+              <select id="homeCompanion" class="form-select">
+                <option>Solo</option>
+                <option>Couple</option>
+                <option>Friends</option>
+                <option>Family</option>
+                <option>Group</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="homeTravelers" class="form-label">Travelers</label>
+              <input id="homeTravelers" class="form-control" type="number" min="1" max="12" value="2">
+            </div>
+            <div class="col-12">
+              <button class="btn btn-app btn-primary w-100" id="homePlanBtn" type="button">Generate travel recommendation</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-head mt-5">
+        <div class="eyebrow">Featured destinations</div>
+        <h2>Popular smart picks</h2>
+      </div>
+      <div class="row g-3" id="featuredDestinations"></div>
+
+      <div class="row g-4 mt-2">
+        <div class="col-lg-8">
+          <div class="card-shell h-100">
+            <div class="section-head">
+              <div class="eyebrow">Platform capability audit</div>
+              <h3>Everything connected as one ecosystem</h3>
+            </div>
+            <div class="feature-grid" id="featureGrid"></div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card-shell h-100">
+            <div class="section-head">
+              <div class="eyebrow">Travel deals</div>
+              <h3>Premium travel value signals</h3>
+            </div>
+            <div id="travelDeals" class="stack-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-signup" class="page">
+      <div class="form-page">
+        <div class="card-shell narrow-card">
+          <div class="section-head">
+            <div class="eyebrow">Create account</div>
+            <h2>Signup</h2>
+          </div>
+          <form id="signupForm" class="row g-3">
+            <div class="col-md-6">
+              <label for="signupName" class="form-label">Full name</label>
+              <input id="signupName" class="form-control" type="text" required>
+            </div>
+            <div class="col-md-6">
+              <label for="signupPhone" class="form-label">Phone</label>
+              <input id="signupPhone" class="form-control" type="tel" required>
+            </div>
+            <div class="col-12">
+              <label for="signupEmail" class="form-label">Email</label>
+              <input id="signupEmail" class="form-control" type="email" required>
+            </div>
+            <div class="col-md-6">
+              <label for="signupPassword" class="form-label">Password</label>
+              <input id="signupPassword" class="form-control" type="password" minlength="6" required>
+            </div>
+            <div class="col-md-6">
+              <label for="signupConfirm" class="form-label">Confirm password</label>
+              <input id="signupConfirm" class="form-control" type="password" minlength="6" required>
+            </div>
+            <div class="col-12">
+              <label for="signupAvatar" class="form-label">Profile photo</label>
+              <input id="signupAvatar" class="form-control" type="file" accept="image/*">
+              <div id="signupAvatarPreview" class="image-preview mt-2"></div>
+            </div>
+            <div class="col-12">
+              <button class="btn btn-app btn-primary w-100" type="submit">Create account</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-login" class="page">
+      <div class="form-page">
+        <div class="card-shell narrow-card">
+          <div class="section-head">
+            <div class="eyebrow">Welcome back</div>
+            <h2>Login</h2>
+          </div>
+          <form id="loginForm" class="row g-3">
+            <div class="col-12">
+              <label for="loginEmail" class="form-label">Email</label>
+              <input id="loginEmail" class="form-control" type="email" required>
+            </div>
+            <div class="col-12">
+              <label for="loginPassword" class="form-label">Password</label>
+              <input id="loginPassword" class="form-control" type="password" required>
+            </div>
+            <div class="col-12 d-flex justify-content-between flex-wrap gap-2">
+              <label class="form-check d-flex gap-2 align-items-center">
+                <input id="rememberMe" class="form-check-input" type="checkbox">
+                <span class="small-muted">Remember me</span>
+              </label>
+              <button class="btn btn-link p-0 text-info" id="forgotPasswordBtn" type="button">Forgot password</button>
+            </div>
+            <div class="col-12">
+              <button class="btn btn-app btn-primary w-100" type="submit">Login</button>
+            </div>
+            <div class="col-12">
+              <button class="btn btn-app btn-ghost w-100" type="button" id="googleLoginBtn">Google login demo</button>
+            </div>
+            <div class="col-12">
+              <button class="btn btn-app btn-ghost w-100" type="button" id="otpLoginBtn">Phone OTP demo</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-dashboard" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Dashboard</div>
+        <h2 id="dashboardGreeting">Welcome</h2>
+      </div>
+      <div class="row g-3" id="dashboardStats"></div>
+      <div class="row g-4 mt-1">
+        <div class="col-lg-8">
+          <div class="card-shell mb-4">
+            <div class="section-head">
+              <div class="eyebrow">Live weather</div>
+              <h3>Current destination conditions</h3>
+            </div>
+            <div id="dashboardWeather" class="empty-state compact-empty">Weather appears once a destination is chosen.</div>
+          </div>
+          <div class="card-shell mb-4">
+            <div class="section-head d-flex justify-content-between align-items-center">
+              <div>
+                <div class="eyebrow">Travel analytics</div>
+                <h3>Expense and trip overview</h3>
+              </div>
+              <button class="btn btn-app btn-ghost btn-sm" type="button" data-nav="expenses">Open tracker</button>
+            </div>
+            <div id="dashboardAnalytics"></div>
+          </div>
+          <div class="card-shell">
+            <div class="section-head d-flex justify-content-between align-items-center">
+              <div>
+                <div class="eyebrow">Trips</div>
+                <h3>My trips</h3>
+              </div>
+              <button class="btn btn-app btn-primary btn-sm" type="button" data-nav="planner">Plan new trip</button>
+            </div>
+            <div id="dashboardTrips"></div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card-shell mb-4">
+            <div class="section-head d-flex justify-content-between align-items-center">
+              <div>
+                <div class="eyebrow">Notifications</div>
+                <h3>Recent alerts</h3>
+              </div>
+              <button class="btn btn-app btn-ghost btn-sm" type="button" data-nav="notifications">View all</button>
+            </div>
+            <div id="dashboardNotifications" class="stack-list"></div>
+          </div>
+          <div class="card-shell">
+            <div class="section-head d-flex justify-content-between align-items-center">
+              <div>
+                <div class="eyebrow">Buddy matches</div>
+                <h3>Suggested travelers</h3>
+              </div>
+              <button class="btn btn-app btn-ghost btn-sm" type="button" data-nav="buddies">Explore</button>
+            </div>
+            <div id="dashboardBuddies" class="stack-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-planner" class="page">
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Trip planning</div>
+              <h2>Trip Planning Page</h2>
+            </div>
+            <form id="plannerForm" class="row g-3">
+              <div class="col-12">
+                <label for="planDestination" class="form-label">Destination search</label>
+                <div class="input-with-btn">
+                  <input id="planDestination" class="form-control" type="text" placeholder="Enter destination or dream location" required>
+                  <button class="btn btn-app btn-ghost btn-sm" type="button" id="planVoiceBtn">Voice</button>
+                </div>
+                <div id="destinationSuggestions" class="suggestion-list"></div>
+              </div>
+              <div class="col-md-6">
+                <label for="planStartDate" class="form-label">Travel date</label>
+                <input id="planStartDate" class="form-control" type="date" required>
+              </div>
+              <div class="col-md-6">
+                <label for="planDays" class="form-label">Trip duration</label>
+                <input id="planDays" class="form-control" type="number" min="1" max="30" value="5" required>
+              </div>
+              <div class="col-md-6">
+                <label for="planBudget" class="form-label">Budget</label>
+                <input id="planBudget" class="form-control" type="range" min="300" max="10000" step="100" value="2500">
+                <div class="small-muted" id="budgetLabel">$2,500 total</div>
+              </div>
+              <div class="col-md-6">
+                <label for="planTravelers" class="form-label">Number of travelers</label>
+                <input id="planTravelers" class="form-control" type="number" min="1" max="12" value="2">
+              </div>
+              <div class="col-md-6">
+                <label for="planCompanion" class="form-label">Travel companion</label>
+                <select id="planCompanion" class="form-select">
+                  <option>Solo</option>
+                  <option>Friends</option>
+                  <option>Couple</option>
+                  <option>Family</option>
+                  <option>Group</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="planAccommodation" class="form-label">Accommodation preference</label>
+                <select id="planAccommodation" class="form-select">
+                  <option>Luxury hotel</option>
+                  <option selected>Balanced premium stay</option>
+                  <option>Budget smart stay</option>
+                  <option>Hostel / backpacker</option>
+                  <option>Villa / apartment</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label for="planNotes" class="form-label">Special notes</label>
+                <textarea id="planNotes" class="form-control" rows="3" placeholder="Vegetarian, wheelchair access, with kids, focus on hiking, low walking load, nightlife, etc."></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Trip mood selection</label>
+                <div class="mood-grid" id="moodGrid"></div>
+              </div>
+              <div class="col-12">
+                <button class="btn btn-app btn-primary w-100" type="submit" id="generatePlanBtn">Generate exact-day itinerary</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="card-shell sticky-card">
+            <div class="section-head">
+              <div class="eyebrow">Planner checks</div>
+              <h3>Live quality validation</h3>
+            </div>
+            <div id="plannerChecks" class="stack-list"></div>
+            <div class="divider-line"></div>
+            <div class="section-head">
+              <div class="eyebrow">Search and filters</div>
+              <h3>Relevant smart suggestions</h3>
+            </div>
+            <div id="liveSearchResults" class="stack-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-recommendation" class="page">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div class="section-head mb-0">
+          <div class="eyebrow">AI recommendation page</div>
+          <h2>Trip intelligence output</h2>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-app btn-ghost" id="savePlanBtn" type="button">Save trip</button>
+          <button class="btn btn-app btn-ghost" id="wishlistPlanBtn" type="button">Add to wishlist</button>
+          <button class="btn btn-app btn-ghost" id="sharePlanBtn" type="button">Share</button>
+          <button class="btn btn-app btn-primary" data-nav="itinerary" type="button">Open itinerary</button>
+        </div>
+      </div>
+      <div id="recommendationHero" class="card-shell hero-result"></div>
+      <div class="row g-4 mt-1">
+        <div class="col-lg-6">
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Recommendation engine</div>
+              <h3>Why this trip works</h3>
+            </div>
+            <div id="recommendationReasons" class="stack-list"></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Budget breakdown</div>
+              <h3>Cost realism</h3>
+            </div>
+            <div id="budgetBreakdown" class="stack-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-4 mt-1">
+        <div class="col-lg-6">
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Travel tips</div>
+              <h3>Practical guidance</h3>
+            </div>
+            <div id="travelTips" class="stack-list"></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Live weather</div>
+              <h3>Weather + season</h3>
+            </div>
+            <div id="recommendationWeather"></div>
+            <button class="btn btn-app btn-ghost mt-3" id="speakPlanBtn" type="button">Read summary aloud</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-itinerary" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Itinerary page</div>
+        <h2>Day-wise travel plan</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div id="itineraryList" class="stack-list"></div>
+        </div>
+        <div class="col-lg-5">
+          <div class="card-shell sticky-card">
+            <div class="section-head">
+              <div class="eyebrow">Route map</div>
+              <h3>Map route and nearby places</h3>
+            </div>
+            <div id="itineraryMap" class="map-box"></div>
+            <div id="itineraryMapPlaces" class="stack-list mt-3"></div>
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-app btn-ghost w-100" type="button" data-nav="map">Open full map</button>
+              <button class="btn btn-app btn-primary w-100" type="button" data-nav="booking">Book options</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-buddies" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Travel buddy matching</div>
+        <h2>Traveler profile cards</h2>
+      </div>
+      <div class="card-shell mb-4">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-5">
+            <label for="buddySearch" class="form-label">Destination or traveler</label>
+            <input id="buddySearch" class="form-control" type="text" placeholder="Search same-destination travelers">
+          </div>
+          <div class="col-md-3">
+            <label for="buddyStyle" class="form-label">Style</label>
+            <select id="buddyStyle" class="form-select">
+              <option value="">Any</option>
+              <option>Adventure</option>
+              <option>Cultural</option>
+              <option>Wellness</option>
+              <option>City Explorer</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-app btn-primary w-100" id="buddyFilterBtn" type="button">Apply filters</button>
+          </div>
+        </div>
+      </div>
+      <div id="buddyGrid" class="row g-3"></div>
+    </section>
+
+    <section id="page-buddy-detail" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Traveler profile page</div>
+        <h2>Buddy profile</h2>
+      </div>
+      <div id="buddyDetailCard" class="card-shell"></div>
+    </section>
+
+    <section id="page-chat" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Chat page</div>
+        <h2>Real-time trip coordination</h2>
+      </div>
+      <div class="card-shell chat-shell">
+        <div class="chat-toolbar">
+          <div>
+            <strong id="chatBuddyName">Travel buddy</strong>
+            <div class="small-muted">Images, location sharing, and smart replies supported</div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-app btn-ghost btn-sm" id="chatLocationBtn" type="button">Share location</button>
+            <button class="btn btn-app btn-ghost btn-sm" id="chatImageBtn" type="button">Send image</button>
+            <button class="btn btn-app btn-ghost btn-sm" id="chatGroupBtn" type="button">Create group</button>
+          </div>
+        </div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-row">
+          <input id="chatInput" class="form-control" type="text" placeholder="Type a message about routes, budgets, or schedules">
+          <button class="btn btn-app btn-primary" id="chatSendBtn" type="button">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-booking" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Booking page</div>
+        <h2>Hotel, transport, and activity booking</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <div class="card-shell mb-4">
+            <div class="section-head">
+              <div class="eyebrow">Hotel booking options</div>
+              <h3>Stay choices</h3>
+            </div>
+            <div id="hotelOptions" class="stack-list"></div>
+          </div>
+          <div class="card-shell mb-4">
+            <div class="section-head">
+              <div class="eyebrow">Transport booking</div>
+              <h3>Flight and route choices</h3>
+            </div>
+            <div id="flightOptions" class="stack-list"></div>
+          </div>
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Activity booking</div>
+              <h3>Selectable experiences</h3>
+            </div>
+            <div id="activityOptions" class="stack-list"></div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card-shell sticky-card">
+            <div class="section-head">
+              <div class="eyebrow">Price comparison</div>
+              <h3>Booking summary</h3>
+            </div>
+            <div id="bookingSummary"></div>
+            <button class="btn btn-app btn-primary w-100 mt-3" type="button" data-nav="payment">Continue to payment</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-payment" class="page">
+      <div class="form-page">
+        <div class="card-shell narrow-card">
+          <div class="section-head">
+            <div class="eyebrow">Payment page</div>
+            <h2>Secure checkout</h2>
+          </div>
+          <div class="total-pill mb-3" id="paymentTotal">$0</div>
+          <div class="payment-tabs">
+            <button class="payment-tab active" data-pay="card" type="button">Card</button>
+            <button class="payment-tab" data-pay="upi" type="button">UPI</button>
+            <button class="payment-tab" data-pay="paypal" type="button">PayPal</button>
+          </div>
+          <div id="paymentForms">
+            <div class="payment-pane active" data-pane="card">
+              <div class="row g-3">
+                <div class="col-12"><input id="cardName" class="form-control" type="text" placeholder="Name on card"></div>
+                <div class="col-12"><input id="cardNumber" class="form-control" type="text" maxlength="19" placeholder="Card number"></div>
+                <div class="col-6"><input id="cardExpiry" class="form-control" type="text" placeholder="MM/YY"></div>
+                <div class="col-6"><input id="cardCvv" class="form-control" type="password" maxlength="4" placeholder="CVV"></div>
+              </div>
+            </div>
+            <div class="payment-pane" data-pane="upi">
+              <input id="upiId" class="form-control" type="text" placeholder="yourname@upi">
+            </div>
+            <div class="payment-pane" data-pane="paypal">
+              <input id="paypalEmail" class="form-control" type="email" placeholder="you@example.com">
+            </div>
+          </div>
+          <button class="btn btn-app btn-primary w-100 mt-4" id="payNowBtn" type="button">Confirm payment</button>
+          <div class="small-muted mt-2 text-center">Gateway ready for real provider integration. This workspace uses secure demo processing.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-expenses" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Expense tracker</div>
+        <h2>Budget overview and spend control</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Add expense</div>
+              <h3>Track spending</h3>
+            </div>
+            <form id="expenseForm" class="row g-3">
+              <div class="col-12"><input id="expenseAmount" class="form-control" type="number" min="1" step="0.01" placeholder="Amount"></div>
+              <div class="col-12"><input id="expenseDescription" class="form-control" type="text" placeholder="Description"></div>
+              <div class="col-md-6">
+                <select id="expenseCategory" class="form-select">
+                  <option>Food</option>
+                  <option>Transport</option>
+                  <option>Hotel</option>
+                  <option>Activities</option>
+                  <option>Shopping</option>
+                  <option>Misc</option>
+                </select>
+              </div>
+              <div class="col-md-6"><input id="expenseDate" class="form-control" type="date"></div>
+              <div class="col-12"><input id="expenseTripLabel" class="form-control" type="text" placeholder="Trip label"></div>
+              <div class="col-12"><input id="expenseReceipt" class="form-control" type="text" placeholder="Receipt note or file name"></div>
+              <div class="col-12"><button class="btn btn-app btn-primary w-100" type="submit">Add expense</button></div>
+            </form>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="card-shell mb-4">
+            <div class="section-head">
+              <div class="eyebrow">Budget overview</div>
+              <h3>Remaining budget indicator</h3>
+            </div>
+            <div id="expenseOverview"></div>
+          </div>
+          <div class="card-shell">
+            <div class="section-head d-flex justify-content-between align-items-center">
+              <div>
+                <div class="eyebrow">Expense categories</div>
+                <h3>Recorded transactions</h3>
+              </div>
+              <button class="btn btn-app btn-ghost btn-sm" id="exportExpensesBtn" type="button">Export CSV</button>
+            </div>
+            <div id="expenseList" class="stack-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-map" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Map page</div>
+        <h2>Destination map and nearby places</h2>
+      </div>
+      <div class="card-shell mb-4">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-7">
+            <label for="mapSearch" class="form-label">Search location</label>
+            <input id="mapSearch" class="form-control" type="text" placeholder="Search cities, landmarks, districts, or attractions">
+          </div>
+          <div class="col-md-5 d-flex gap-2">
+            <button class="btn btn-app btn-primary flex-fill" id="mapSearchBtn" type="button">Search</button>
+            <button class="btn btn-app btn-ghost flex-fill" id="mapLocateBtn" type="button">My location</button>
+          </div>
+        </div>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <div class="card-shell">
+            <div id="globalMap" class="map-box large-map"></div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Nearby places</div>
+              <h3>Live and planned locations</h3>
+            </div>
+            <div id="mapPlaces" class="stack-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-trips" class="page">
+      <div class="section-head">
+        <div class="eyebrow">My trips page</div>
+        <h2>Upcoming, saved, and past trips</h2>
+      </div>
+      <div id="tripList" class="row g-3"></div>
+    </section>
+
+    <section id="page-wishlist" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Wishlist page</div>
+        <h2>Saved destinations and favorites</h2>
+      </div>
+      <div id="wishlistGrid" class="row g-3"></div>
+    </section>
+
+    <section id="page-notifications" class="page">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div class="section-head mb-0">
+          <div class="eyebrow">Notifications page</div>
+          <h2>Trip alerts and booking updates</h2>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-app btn-ghost" id="markAllReadBtn" type="button">Mark all read</button>
+          <button class="btn btn-app btn-ghost" id="clearNotificationsBtn" type="button">Clear</button>
+        </div>
+      </div>
+      <div id="notificationList" class="stack-list"></div>
+    </section>
+
+    <section id="page-packing" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Smart packing</div>
+        <h2>AI Packing List</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card-shell sticky-card">
+            <div class="section-head">
+              <div class="eyebrow">Generate checklist</div>
+              <h3>Destination-aware packing</h3>
+            </div>
+            <form id="packingForm" class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="packingDestination">Destination</label>
+                <input id="packingDestination" class="form-control" type="text" placeholder="Kyoto, Bali, Paris..." required>
+              </div>
+              <div class="col-6">
+                <label class="form-label" for="packingDays">Days</label>
+                <input id="packingDays" class="form-control" type="number" min="1" max="30" value="7">
+              </div>
+              <div class="col-6">
+                <label class="form-label" for="packingType">Trip type</label>
+                <select id="packingType" class="form-select">
+                  <option>City</option>
+                  <option>Beach</option>
+                  <option>Adventure</option>
+                  <option>Business</option>
+                  <option>Family</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <button class="btn btn-app btn-primary w-100" type="submit">Generate packing list</button>
+              </div>
+              <div class="col-12">
+                <button class="btn btn-app btn-ghost w-100" id="clearPackingBtn" type="button">Clear list</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="card-shell">
+            <div class="section-head d-flex justify-content-between align-items-center">
+              <div>
+                <div class="eyebrow">Checklist</div>
+                <h3 id="packingSummary">Ready when you are</h3>
+              </div>
+              <span id="packingProgress" class="status-pill">0/0 packed</span>
+            </div>
+            <div id="packingList" class="stack-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-profile" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Profile page</div>
+        <h2>Edit profile and travel preferences</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card-shell text-center">
+            <div class="profile-avatar" id="profileAvatar">S</div>
+            <h3 id="profileName">Smart traveler</h3>
+            <p id="profileEmail" class="small-muted">user@example.com</p>
+            <div id="profileStats" class="stack-list"></div>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="card-shell">
+            <form id="profileForm" class="row g-3">
+              <div class="col-md-6"><label class="form-label" for="profileNameInput">Full name</label><input id="profileNameInput" class="form-control" type="text"></div>
+              <div class="col-md-6"><label class="form-label" for="profilePhoneInput">Phone</label><input id="profilePhoneInput" class="form-control" type="tel"></div>
+              <div class="col-md-6"><label class="form-label" for="profileCityInput">Home city</label><input id="profileCityInput" class="form-control" type="text"></div>
+              <div class="col-md-6"><label class="form-label" for="profileAvatarInput">Profile photo</label><input id="profileAvatarInput" class="form-control" type="file" accept="image/*"></div>
+              <div class="col-12"><label class="form-label" for="profilePrefsInput">Travel preferences</label><textarea id="profilePrefsInput" class="form-control" rows="3"></textarea></div>
+              <div class="col-12"><button class="btn btn-app btn-primary" type="submit">Save profile</button></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-settings" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Settings page</div>
+        <h2>Dark mode, language, and notifications</h2>
+      </div>
+      <div class="card-shell narrow-card">
+        <form id="settingsForm" class="row g-3">
+          <div class="col-md-6">
+            <label for="settingsLanguage" class="form-label">Language</label>
+            <select id="settingsLanguage" class="form-select">
+              <option value="en">English</option>
+              <option value="hi">Hindi</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="settingsCurrency" class="form-label">Currency</label>
+            <select id="settingsCurrency" class="form-select">
+              <option>USD</option>
+              <option>EUR</option>
+              <option>GBP</option>
+              <option>INR</option>
+              <option>JPY</option>
+              <option>AUD</option>
+              <option>CAD</option>
+              <option>CHF</option>
+              <option>SGD</option>
+              <option>THB</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="toggle-row">
+              <span>Dark mode</span>
+              <input id="settingsDarkMode" class="form-check-input" type="checkbox">
+            </label>
+          </div>
+          <div class="col-12">
+            <button class="btn btn-app btn-primary" type="submit">Save settings</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="page-reviews" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Review and rating page</div>
+        <h2>Rate destinations and share feedback</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <div class="card-shell">
+            <form id="reviewForm" class="row g-3">
+              <div class="col-12"><label class="form-label" for="reviewDestination">Destination</label><input id="reviewDestination" class="form-control" type="text"></div>
+              <div class="col-12"><label class="form-label" for="reviewTitle">Review title</label><input id="reviewTitle" class="form-control" type="text"></div>
+              <div class="col-12"><label class="form-label" for="reviewRating">Rating</label><input id="reviewRating" class="form-control" type="number" min="1" max="5" value="5"></div>
+              <div class="col-12"><label class="form-label" for="reviewBody">Detailed feedback</label><textarea id="reviewBody" class="form-control" rows="5"></textarea></div>
+              <div class="col-12"><label class="form-label" for="reviewPhotos">Upload travel photos</label><input id="reviewPhotos" class="form-control" type="file" multiple accept="image/*"></div>
+              <div class="col-12"><button class="btn btn-app btn-primary w-100" type="submit">Submit review</button></div>
+            </form>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Review history</div>
+              <h3>Your latest reviews</h3>
+            </div>
+            <div id="reviewList" class="stack-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-currency" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Travel finance and translation</div>
+        <h2>Currency converter and quick translation</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Currency page</div>
+              <h3>Live exchange conversion</h3>
+            </div>
+            <div class="row g-3">
+              <div class="col-12">
+                <label for="currencyAmount" class="form-label">Amount</label>
+                <input id="currencyAmount" class="form-control" type="number" min="0.01" step="0.01" value="100">
+              </div>
+              <div class="col-md-6">
+                <label for="currencyFrom" class="form-label">From</label>
+                <select id="currencyFrom" class="form-select">
+                  <option>USD</option><option>EUR</option><option>GBP</option><option selected>INR</option><option>JPY</option><option>AUD</option><option>CAD</option><option>CHF</option><option>SGD</option><option>THB</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="currencyTo" class="form-label">To</label>
+                <select id="currencyTo" class="form-select">
+                  <option selected>USD</option><option>EUR</option><option>GBP</option><option>INR</option><option>JPY</option><option>AUD</option><option>CAD</option><option>CHF</option><option>SGD</option><option>THB</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <button class="btn btn-app btn-primary w-100" id="currencyConvertBtn" type="button">Convert</button>
+              </div>
+            </div>
+            <div id="currencyResult" class="stack-list mt-4"></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card-shell">
+            <div class="section-head">
+              <div class="eyebrow">Localization and translation</div>
+              <h3>Translate key travel text</h3>
+            </div>
+            <div class="row g-3">
+              <div class="col-12">
+                <label for="translateSourceText" class="form-label">Text to translate</label>
+                <textarea id="translateSourceText" class="form-control" rows="6" placeholder="Paste itinerary notes, travel tips, or destination text here"></textarea>
+              </div>
+              <div class="col-md-6">
+                <label for="translateTargetLang" class="form-label">Target language</label>
+                <select id="translateTargetLang" class="form-select">
+                  <option value="hi">Hindi</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="ja">Japanese</option>
+                </select>
+              </div>
+              <div class="col-md-6 d-flex align-items-end">
+                <button class="btn btn-app btn-primary w-100" id="translateBtn" type="button">Translate</button>
+              </div>
+            </div>
+            <div id="translateResult" class="stack-list mt-4"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-admin" class="page">
+      <div class="section-head">
+        <div class="eyebrow">Admin panel</div>
+        <h2>System overview</h2>
+      </div>
+      <div class="card-shell">
+        <div id="adminOverview" class="row g-3"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

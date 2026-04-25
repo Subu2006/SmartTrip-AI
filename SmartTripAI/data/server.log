@@ -1,0 +1,30 @@
+2026-04-23 12:04:21,049 INFO 127.0.0.1 - "GET / HTTP/1.1" 200 -
+2026-04-23 12:04:21,197 INFO 127.0.0.1 - "GET /static/js/app.js HTTP/1.1" 404 -
+2026-04-23 12:04:21,260 INFO 127.0.0.1 - "GET /static/css/styles.css HTTP/1.1" 200 -
+2026-04-23 12:04:21,943 INFO 127.0.0.1 - "GET /favicon.ico HTTP/1.1" 404 -
+2026-04-23 12:13:21,104 INFO 127.0.0.1 - "GET /api/health HTTP/1.1" 200 -
+2026-04-23 12:13:21,123 INFO 127.0.0.1 - "POST /api/auth/signup HTTP/1.1" 201 -
+2026-04-23 12:13:22,608 ERROR Unhandled server error: disk I/O error
+Traceback (most recent call last):
+  File "C:\Users\subra\OneDrive\Desktop\STAI\app.py", line 1080, in dispatch
+    with db_conn() as conn:
+         ^^^^^^^^^
+sqlite3.OperationalError: disk I/O error
+
+2026-04-23 12:13:22,608 INFO 127.0.0.1 - "POST /api/auth/signup HTTP/1.1" 500 -
+2026-04-23 12:13:23,160 WARNING External request failed: https://api.open-meteo.com/v1/forecast?latitude=35.0116&longitude=135.7681&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto
+2026-04-23 12:13:23,161 INFO 127.0.0.1 - "POST /api/plans/recommend HTTP/1.1" 200 -
+2026-04-23 12:13:24,643 ERROR Unhandled server error: disk I/O error
+Traceback (most recent call last):
+  File "C:\Users\subra\OneDrive\Desktop\STAI\app.py", line 1146, in dispatch
+    user = self.require_user()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\subra\OneDrive\Desktop\STAI\app.py", line 958, in require_user
+    user = self.current_user()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\subra\OneDrive\Desktop\STAI\app.py", line 947, in current_user
+    row = conn.execute(
+          ^^^^^^^^^^^^^
+sqlite3.OperationalError: disk I/O error
+
+2026-04-23 12:13:24,644 INFO 127.0.0.1 - "POST /api/trips HTTP/1.1" 500 -
